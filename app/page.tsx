@@ -1,65 +1,292 @@
-import Image from "next/image";
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { MapPin, Users, TrendingUp, Shield, MessageSquare, BarChart3 } from "lucide-react"
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <span className="text-xl font-bold">CIVIX</span>
+          </div>
+
+          <nav className="hidden items-center gap-6 md:flex">
+            <Link
+              href="#features"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Features
+            </Link>
+            <Link
+              href="#impact"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Impact
+            </Link>
+            <Link
+              href="#about"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              About
+            </Link>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <Link href="/login">
+              <Button variant="ghost">Login</Button>
+            </Link>
+            <Link href="/register">
+              <Button>Get Started</Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-20 md:py-32">
+        <div className="mx-auto max-w-4xl text-center">
+          <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/20" variant="secondary">
+            Your Voice, Your City
+          </Badge>
+          <h1 className="mb-6 text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl lg:text-7xl">
+            Connect, Report, Transform Your Community
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground text-pretty md:text-xl">
+            CIVIX is the social civic platform that empowers citizens to report issues, engage with their community, and
+            create real change together.
+          </p>
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link href="/register">
+              <Button size="lg" className="w-full sm:w-auto">
+                Join CIVIX
+              </Button>
+            </Link>
+            <Link href="/feed">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent">
+                Explore Feed
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section id="impact" className="border-y border-border bg-secondary/30 py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            <div className="text-center">
+              <div className="mb-2 text-3xl font-bold text-primary md:text-4xl">12.5K+</div>
+              <div className="text-sm text-muted-foreground">Issues Reported</div>
+            </div>
+            <div className="text-center">
+              <div className="mb-2 text-3xl font-bold text-primary md:text-4xl">8.2K</div>
+              <div className="text-sm text-muted-foreground">Issues Resolved</div>
+            </div>
+            <div className="text-center">
+              <div className="mb-2 text-3xl font-bold text-primary md:text-4xl">25K+</div>
+              <div className="text-sm text-muted-foreground">Active Citizens</div>
+            </div>
+            <div className="text-center">
+              <div className="mb-2 text-3xl font-bold text-primary md:text-4xl">94%</div>
+              <div className="text-sm text-muted-foreground">Satisfaction Rate</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="container mx-auto px-4 py-20">
+        <div className="mb-12 text-center">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight text-balance md:text-4xl">
+            Everything You Need for Civic Engagement
+          </h2>
+          <p className="mx-auto max-w-2xl text-muted-foreground text-pretty">
+            Powerful features designed to make civic participation easy, engaging, and impactful
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="border-border transition-shadow hover:shadow-lg">
+            <CardContent className="pt-6">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <MessageSquare className="h-6 w-6" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">Social Feed</h3>
+              <p className="text-muted-foreground">
+                Stay connected with your community through a real-time social feed of civic issues and updates
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border transition-shadow hover:shadow-lg">
+            <CardContent className="pt-6">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <MapPin className="h-6 w-6" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">Smart Reporting</h3>
+              <p className="text-muted-foreground">
+                Report issues with photos, GPS location, and category tagging for faster resolution
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border transition-shadow hover:shadow-lg">
+            <CardContent className="pt-6">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Users className="h-6 w-6" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">Community Voting</h3>
+              <p className="text-muted-foreground">
+                Support issues that matter to you and help prioritize what gets addressed first
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border transition-shadow hover:shadow-lg">
+            <CardContent className="pt-6">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Shield className="h-6 w-6" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">Official Responses</h3>
+              <p className="text-muted-foreground">
+                Get direct updates from municipal agents working to resolve reported issues
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border transition-shadow hover:shadow-lg">
+            <CardContent className="pt-6">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <TrendingUp className="h-6 w-6" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">Track Progress</h3>
+              <p className="text-muted-foreground">
+                Monitor issue status from pending to in-progress to resolved with real-time updates
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border transition-shadow hover:shadow-lg">
+            <CardContent className="pt-6">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <BarChart3 className="h-6 w-6" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">Impact Analytics</h3>
+              <p className="text-muted-foreground">
+                View detailed analytics on community engagement and municipal response times
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      </main>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-primary py-20 text-primary-foreground">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight text-balance md:text-4xl">
+            Ready to Make a Difference?
+          </h2>
+          <p className="mx-auto mb-8 max-w-2xl text-lg text-primary-foreground/90 text-pretty">
+            Join thousands of engaged citizens making their communities better, one report at a time
+          </p>
+          <Link href="/register">
+            <Button size="lg" variant="secondary" className="bg-background text-foreground hover:bg-background/90">
+              Create Your Account
+            </Button>
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid gap-8 md:grid-cols-4">
+            <div>
+              <div className="mb-4 flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <MapPin className="h-4 w-4" />
+                </div>
+                <span className="font-bold">CIVIX</span>
+              </div>
+              <p className="text-sm text-muted-foreground">Empowering communities through civic engagement</p>
+            </div>
+
+            <div>
+              <h4 className="mb-4 font-semibold">Platform</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <Link href="/feed" className="hover:text-foreground transition-colors">
+                    Feed
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/map" className="hover:text-foreground transition-colors">
+                    Map
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/about" className="hover:text-foreground transition-colors">
+                    About
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="mb-4 font-semibold">Resources</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <Link href="/help" className="hover:text-foreground transition-colors">
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/guidelines" className="hover:text-foreground transition-colors">
+                    Guidelines
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/api" className="hover:text-foreground transition-colors">
+                    API
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="mb-4 font-semibold">Legal</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <Link href="/privacy" className="hover:text-foreground transition-colors">
+                    Privacy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="hover:text-foreground transition-colors">
+                    Terms
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="hover:text-foreground transition-colors">
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 border-t border-border pt-8 text-center text-sm text-muted-foreground">
+            <p>&copy; 2025 CIVIX. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
-  );
+  )
 }
