@@ -1,0 +1,112 @@
+// hooks/useReports.ts
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import type { Report } from "../lib/utils";
+const api = "http://localhost:8000/api"
+
+export default function useReports() {
+  const queryClient = useQueryClient();
+
+  // 📌 1. Query : récupérer tous les reports
+  const reportsQuery = useQuery<Report[]>({
+    queryKey: ["reports"],
+    queryFn: async () => {
+      const res = await axios.get(`${api}/reports/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      return res.data;
+    },
+  });
+
+  // 📌 2. Mutation : créer un report
+  const addReportMutation = useMutation({
+    mutationFn: async (newReport: {
+      description: string;
+      category_id: number;
+      latitude?: string;
+      longitude?: string;
+      priorite: "low" | "medium" | "high";
+      image?: File;
+    }) => {
+      const formData = new FormData();
+      Object.entries(newReport).forEach(([key, value]) => {
+        if (value !== undefined) formData.append(key, value as string | Blob);
+      });
+
+      const res = await axios.post(`${api}/reports/`, formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+
+  // 📌 3. Mutation : supprimer un report
+  const deleteReportMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await axios.delete(`${api}/reports/${id}/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+
+  // 📌 4. Mutation : mettre à jour un report
+  const updateReportMutation = useMutation({
+    mutationFn: async (updatedReport: {
+      id: number;
+      description?: string;
+      statut?: "pending" | "in_progress" | "resolved";
+      priorite?: "low" | "medium" | "high";
+      category_id?: number;
+    }) => {
+      const res = await axios.patch(
+        `${api}/reports/${updatedReport.id}/`,
+        updatedReport,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+
+  return {
+    // Query
+    data: reportsQuery.data,
+    isLoading: reportsQuery.isLoading,
+    error: reportsQuery.error,
+
+    // Mutation add report
+    addReport: addReportMutation.mutate,
+    isAdding: addReportMutation.isPending,
+    addError: addReportMutation.error,
+
+    // Mutation delete report
+    deleteReport: deleteReportMutation.mutate,
+    isDeleting: deleteReportMutation.isPending,
+    deleteError: deleteReportMutation.error,
+
+    // Mutation update report
+    updateReport: updateReportMutation.mutate,
+    isUpdating: updateReportMutation.isPending,
+    updateError: updateReportMutation.error,
+  };
+}

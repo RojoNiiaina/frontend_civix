@@ -1,11 +1,18 @@
 import Link from "next/link"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Bell, MapPin, Search, Settings, Map } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Bell, MapPin, Search, Settings, Map, Menu, User, LogOut } from "lucide-react"
 import { ReportCard } from "@/components/report-card"
 import { CreateReportDialog } from "@/components/create-report-dialog"
+import { LogoutDialog } from "@/components/logout-dialog"
 
 export default function FeedPage() {
   const mockReports = [
@@ -14,7 +21,7 @@ export default function FeedPage() {
       category: "Infrastructure",
       title: "Pothole on Main Street causing traffic issues",
       description: "Large pothole near the intersection of Main St and 5th Ave. Multiple vehicles have been damaged.",
-      image: "/pothole-road.jpg",
+      image: "https://i.pinimg.com/736x/d5/18/91/d518910660980f3b6115102f9a7ecdbb.jpg",
       location: "Main St & 5th Ave",
       status: "in-progress" as const,
       votes: 24,
@@ -26,7 +33,7 @@ export default function FeedPage() {
       category: "Sanitation",
       title: "Overflowing trash bins in Central Park",
       description: "The trash bins near the playground are overflowing. Needs immediate attention.",
-      image: "/trash-bins-park.jpg",
+      image: "https://i.pinimg.com/736x/d5/18/91/d518910660980f3b6115102f9a7ecdbb.jpg",
       location: "Central Park, Zone B",
       status: "pending" as const,
       votes: 18,
@@ -49,7 +56,7 @@ export default function FeedPage() {
       category: "Environment",
       title: "Illegal dumping near residential area",
       description: "Construction waste has been dumped near the residential zone. Environmental concern.",
-      image: "/illegal-dumping.jpg",
+      image: "https://i.pinimg.com/736x/d5/18/91/d518910660980f3b6115102f9a7ecdbb.jpg",
       location: "Elm Street",
       status: "pending" as const,
       votes: 15,
@@ -58,94 +65,143 @@ export default function FeedPage() {
     },
   ]
 
+  const okey = () => {
+    alert(localStorage.getItem("token"))
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <MapPin className="h-5 w-5" />
-              </div>
-              <span className="text-xl font-bold">CIVIX</span>
-            </Link>
-          </div>
-
-          <div className="hidden flex-1 items-center justify-center px-8 md:flex">
-            <div className="relative w-full max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input type="search" placeholder="Search reports..." className="w-full pl-9 bg-secondary/50" />
+      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto flex h-14 items-center justify-between px-4">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <MapPin className="h-5 w-5" />
             </div>
-          </div>
+            <span className="text-xl font-bold">CIVIX</span>
+          </Link>
+
+        
 
           <div className="flex items-center gap-2">
-            <Link href="/map">
-              <Button variant="ghost" size="icon">
-                <Map className="h-5 w-5" />
-              </Button>
-            </Link>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary" />
+            <Button  variant="ghost" size="icon" className="hidden md:flex">
+              <Search className="h-5 w-5" />
             </Button>
-            <Link href="/profile">
-              <Avatar className="h-8 w-8 cursor-pointer">
-                <AvatarImage src="/abstract-geometric-shapes.png" alt="User" />
-                <AvatarFallback className="bg-primary/10 text-primary text-xs">JD</AvatarFallback>
-              </Avatar>
-            </Link>
-            <Link href="/settings">
-              <Button variant="ghost" size="icon">
-                <Settings className="h-5 w-5" />
-              </Button>
-            </Link>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Menu className="h-5 w-5" />
+                  <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Menu</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="flex w-full cursor-pointer items-center">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/map" className="flex w-full cursor-pointer items-center">
+                    <Map className="mr-2 h-4 w-4" />
+                    <span>Map View</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="flex w-full cursor-pointer items-center">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="relative">
+                  <Bell className="mr-2 h-4 w-4" />
+                  <span>Notifications</span>
+                  <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <LogoutDialog/>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="mx-auto max-w-2xl">
-          {/* Tabs */}
-          <Tabs defaultValue="all" className="mb-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="pending">Pending</TabsTrigger>
-              <TabsTrigger value="in-progress">In Progress</TabsTrigger>
-              <TabsTrigger value="resolved">Resolved</TabsTrigger>
-            </TabsList>
-            <TabsContent value="all" className="mt-6 space-y-4">
+      
+
+      <div className="container mx-auto px-0 py-0 md:px-4 md:py-4">
+        <div className="mx-auto max-w-xl">
+          <Tabs defaultValue="all" className="w-full">
+            <div className="sticky top-14 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-3 border-b border-border/40">
+              <TabsList className="grid w-full grid-cols-4 bg-muted/50">
+                <TabsTrigger
+                  value="all"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  All
+                </TabsTrigger>
+                <TabsTrigger
+                  value="pending"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  Pending
+                </TabsTrigger>
+                <TabsTrigger
+                  value="in-progress"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  Active
+                </TabsTrigger>
+                <TabsTrigger
+                  value="resolved"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  Resolved
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="all" className="mt-0 space-y-0">
               {mockReports.map((report, index) => (
-                <ReportCard key={index} {...report} />
+                <div key={index} className="mb-4">
+                  <ReportCard {...report} />
+                </div>
               ))}
             </TabsContent>
-            <TabsContent value="pending" className="mt-6 space-y-4">
+            <TabsContent value="pending" className="mt-0 space-y-0">
               {mockReports
                 .filter((r) => r.status === "pending")
                 .map((report, index) => (
-                  <ReportCard key={index} {...report} />
+                  <div key={index} className="mb-4">
+                    <ReportCard {...report} />
+                  </div>
                 ))}
             </TabsContent>
-            <TabsContent value="in-progress" className="mt-6 space-y-4">
+            <TabsContent value="in-progress" className="mt-0 space-y-0">
               {mockReports
                 .filter((r) => r.status === "in-progress")
                 .map((report, index) => (
-                  <ReportCard key={index} {...report} />
+                  <div key={index} className="mb-4">
+                    <ReportCard {...report} />
+                  </div>
                 ))}
             </TabsContent>
-            <TabsContent value="resolved" className="mt-6 space-y-4">
+            <TabsContent value="resolved" className="mt-0 space-y-0">
               {mockReports
                 .filter((r) => r.status === "resolved")
                 .map((report, index) => (
-                  <ReportCard key={index} {...report} />
+                  <div key={index} className="mb-4">
+                    <ReportCard {...report} />
+                  </div>
                 ))}
             </TabsContent>
           </Tabs>
         </div>
       </div>
 
-      {/* Floating Action Button */}
       <CreateReportDialog />
     </div>
   )

@@ -1,11 +1,35 @@
+"use client"
+
 import Link from "next/link"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MapPin } from "lucide-react"
+import useAuth from "@/hooks/useAuth"
 
 export default function LoginPage() {
+  const router = useRouter()
+  const { login, isLoggingIn, loginError, user } = useAuth()
+
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrorMessage("")
+
+    try {
+      await login({ email, password })
+      router.push("/feed") // redirection après succès
+    } catch (error: any) {
+      setErrorMessage(error?.response?.data?.detail || "Login failed")
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -28,23 +52,43 @@ export default function LoginPage() {
             <CardDescription>Enter your credentials to access your account</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="you@example.com" required />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link href="/reset-password" className="text-sm text-primary hover:underline">
-                  Forgot password?
-                </Link>
+            <form onSubmit={handleLogin}>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                />
               </div>
-              <Input id="password" type="password" placeholder="Enter your password" required />
-            </div>
-            <Button className="w-full" size="lg">
-              Sign In
-            </Button>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Link href="/reset-password" className="text-sm text-primary hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+
+              {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
+
+              <Button className="w-full mt-2" size="lg" disabled={isLoggingIn}>
+                {isLoggingIn ? "Signing in..." : "Sign In"}
+              </Button>
+            </form>
           </CardContent>
+
           <CardFooter className="flex flex-col space-y-4">
             <div className="relative w-full">
               <div className="absolute inset-0 flex items-center">
