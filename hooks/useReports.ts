@@ -16,7 +16,18 @@ export default function useReports() {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
+      return res.data.results;
+    },
+  });
+
+   // 📌 2. Mutation : faire un like
+  const addUserMutation = useMutation({
+    mutationFn: async (newUser: { nom: string; email: string }) => {
+      const res = await axios.post("http://localhost:8000/api/users/", newUser);
       return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 
@@ -24,10 +35,7 @@ export default function useReports() {
   const addReportMutation = useMutation({
     mutationFn: async (newReport: {
       description: string;
-      category_id: number;
-      latitude?: string;
-      longitude?: string;
-      priorite: "low" | "medium" | "high";
+      lieu: string;
       image?: File;
     }) => {
       const formData = new FormData();
@@ -45,6 +53,7 @@ export default function useReports() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reports"] });
+      queryClient.invalidateQueries({ queryKey: ["my-reports"] });
     },
   });
 
@@ -60,6 +69,7 @@ export default function useReports() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reports"] });
+      queryClient.invalidateQueries({ queryKey: ["my-reports"] });
     },
   });
 
@@ -68,9 +78,7 @@ export default function useReports() {
     mutationFn: async (updatedReport: {
       id: number;
       description?: string;
-      statut?: "pending" | "in_progress" | "resolved";
-      priorite?: "low" | "medium" | "high";
-      category_id?: number;
+      lieu?: string;
     }) => {
       const res = await axios.patch(
         `${api}/reports/${updatedReport.id}/`,
@@ -85,6 +93,7 @@ export default function useReports() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reports"] });
+      queryClient.invalidateQueries({ queryKey: ["my-reports"] });
     },
   });
 

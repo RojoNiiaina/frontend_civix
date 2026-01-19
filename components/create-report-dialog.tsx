@@ -24,12 +24,8 @@ export function CreateReportDialog() {
   
   // Form state
   const [formData, setFormData] = useState({
-    title: "",
-    category_id: "",
     description: "",
-    priorite: "medium" as "low" | "medium" | "high",
-    latitude: "",
-    longitude: "",
+    lieu: "",
     image: null as File | null,
   })
   
@@ -42,17 +38,14 @@ export function CreateReportDialog() {
   }
   
   const handleSubmit = () => {
-    if (!formData.title || !formData.category_id || !formData.description) {
+    if (!formData.description) {
       alert("Please fill in all required fields")
       return
     }
     
     const reportData = {
       description: formData.description,
-      category_id: parseInt(formData.category_id),
-      latitude: formData.latitude || undefined,
-      longitude: formData.longitude || undefined,
-      priorite: formData.priorite,
+      lieu: formData.lieu,
       image: formData.image || undefined,
     }
     
@@ -60,12 +53,8 @@ export function CreateReportDialog() {
       onSuccess: () => {
         setOpen(false)
         setFormData({
-          title: "",
-          category_id: "",
           description: "",
-          priorite: "medium",
-          latitude: "",
-          longitude: "",
+          lieu: "",
           image: null,
         })
       },
@@ -95,30 +84,6 @@ export function CreateReportDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-5 py-6">
-          <div className="space-y-2">
-            <Label htmlFor="title" className="text-sm font-semibold">
-              Title
-            </Label>
-            <Input id="title" placeholder="Brief description of the issue" className="h-11 text-base" value={formData.title} onChange={(e) => handleInputChange("title", e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="category" className="text-sm font-semibold">
-              Category
-            </Label>
-            <Select value={formData.category_id} onValueChange={(value) => handleInputChange("category_id", value)}>
-              <SelectTrigger id="category" className="h-11">
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Infrastructure</SelectItem>
-                <SelectItem value="2">Sanitation</SelectItem>
-                <SelectItem value="3">Public Safety</SelectItem>
-                <SelectItem value="4">Environment</SelectItem>
-                <SelectItem value="5">Transportation</SelectItem>
-                <SelectItem value="6">Utilities</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
           <div className="space-y-2">
             <Label htmlFor="description" className="text-sm font-semibold">
               Description
@@ -182,7 +147,13 @@ export function CreateReportDialog() {
               Location
             </Label>
             <div className="flex items-center gap-3">
-              <Input id="location" placeholder="Auto-detected via GPS" disabled className="h-11 flex-1" value={formData.latitude && formData.longitude ? `${formData.latitude}, ${formData.longitude}` : "Auto-detected via GPS"} />
+              <Input
+                id="lieu"
+                className="h-11 flex-1" 
+                placeholder="Your location" 
+                value={formData.lieu}
+                onChange={(e) => handleInputChange("lieu", e.target.value)}
+              />
               <Button variant="outline" size="icon" type="button" className="h-11 w-11 bg-transparent">
                 <MapPin className="h-5 w-5" />
               </Button>

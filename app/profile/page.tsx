@@ -1,13 +1,54 @@
+"use client"
+
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, ArrowLeft, Award, FileText, Heart } from "lucide-react"
+import { MapPin, ArrowLeft, Award, FileText, Heart, Loader2 } from "lucide-react"
 import { ReportCard } from "@/components/report-card"
+import useMyReports from "@/hooks/useMyReports"
+import useAuth from "@/hooks/useAuth"
 
 export default function ProfilePage() {
+  const { user, isLoadingUser, userError } = useAuth()
+  const reportsHook = useMyReports()
+
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (userError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-red-500">Impossible de charger votre profil.</p>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Aucun utilisateur connecté.</p>
+      </div>
+    )
+  }
+
+  const { id, nom, email, role, statut, date_inscription } = user
+
+  const joinDate =
+    date_inscription ? new Date(date_inscription) : null
+  const formattedJoinDate = joinDate
+    ? joinDate.toLocaleDateString("fr-FR", {
+        month: "long",
+        year: "numeric",
+      })
+    : null
   const userStats = {
     reportsSubmitted: 12,
     reportsResolved: 8,
@@ -15,19 +56,11 @@ export default function ProfilePage() {
     reputationScore: 342,
   }
 
-  const userReports = [
-    {
-      author: { name: "John Doe" },
-      category: "Infrastructure",
-      title: "Pothole on Main Street causing traffic issues",
-      description: "Large pothole near the intersection of Main St and 5th Ave.",
-      location: "Main St & 5th Ave",
-      status: "in-progress" as const,
-      votes: 24,
-      comments: 8,
-      timeAgo: "2 hours ago",
-    },
-  ]
+  const {
+    data: reports = [],
+    isLoading,
+    error,
+  } = reportsHook
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,8 +93,10 @@ export default function ProfilePage() {
                   <AvatarFallback className="bg-primary/10 text-primary text-2xl">JD</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 text-center sm:text-left">
-                  <h1 className="mb-1 text-2xl font-bold">John Doe</h1>
-                  <p className="mb-3 text-muted-foreground">Joined February 2024</p>
+                  <h1 className="mb-1 text-2xl font-bold">{nom}</h1>
+                  <p className="mb-3 text-muted-foreground">
+                    {formattedJoinDate ? `Joined ${formattedJoinDate}` : "Member"}
+                  </p>
                   <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
                     <Badge variant="secondary" className="gap-1">
                       <Award className="h-3 w-3" />
@@ -87,7 +122,7 @@ export default function ProfilePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{userStats.reportsSubmitted}</div>
+                <div className="text-2xl font-bold">{reports.length}</div>
               </CardContent>
             </Card>
             <Card>
@@ -98,7 +133,7 @@ export default function ProfilePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{userStats.reportsResolved}</div>
+                <div className="text-2xl font-bold"></div>
               </CardContent>
             </Card>
             <Card>
@@ -109,7 +144,7 @@ export default function ProfilePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{userStats.communitySupport}</div>
+                <div className="text-2xl font-bold"></div>
               </CardContent>
             </Card>
             <Card>
@@ -120,7 +155,7 @@ export default function ProfilePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{userStats.reputationScore}</div>
+                <div className="text-2xl font-bold"></div>
               </CardContent>
             </Card>
           </div>
@@ -133,9 +168,27 @@ export default function ProfilePage() {
               <TabsTrigger value="activity">Activity</TabsTrigger>
             </TabsList>
             <TabsContent value="reports" className="mt-6 space-y-4">
-              {userReports.map((report, index) => (
-                <ReportCard key={index} {...report} />
-              ))}
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : error ? (
+                <div className="rounded-lg border border-dashed border-border p-12 text-center">
+                  <p className="text-red-500">Erreur lors du chargement de vos publications.</p>
+                </div>
+              ) : reports.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border p-12 text-center">
+                  <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="mb-2 font-semibold">Aucune publication</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Vous n'avez pas encore créé de publication.
+                  </p>
+                </div>
+              ) : (
+                reports.map((report, index) => (
+                  <ReportCard key={report.id || index} {...report} />
+                ))
+              )}
             </TabsContent>
             <TabsContent value="supported" className="mt-6">
               <div className="rounded-lg border border-dashed border-border p-12 text-center">

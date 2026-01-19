@@ -24,20 +24,17 @@ export interface Category {
   created_at?: string; // ISO string
 }
 
-export type ReportStatus = "pending" | "in_progress" | "resolved";
-export type ReportPriority = "low" | "medium" | "high";
+export type ReportStatus = "en_attente" | "en_cours" | "resolu" | "rejete";
 
 export interface Report {
   id: number;
   user: User;
-  category: Category;
-  category_id?: number; // utile pour les créations
   description: string;
+  lieu: string;
   image?: string; // URL
-  latitude?: string;
-  longitude?: string;
-  statut: ReportStatus;
-  priorite: ReportPriority;
+  like: number;
+  like_count: number;
+  is_liked: boolean;
   created_at: string; // ISO string
 }
 
@@ -51,8 +48,8 @@ export interface Notification {
 
 export interface Comment {
   id: number;
-  report_id: number;
+  report: number; // report ID
   user: User;
-  content: string;
+  contenu: string; // Note: backend utilise "contenu" pas "content"
   created_at: string;
 }

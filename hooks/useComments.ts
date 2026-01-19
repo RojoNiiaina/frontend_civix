@@ -13,27 +13,28 @@ export default function useComments(reportId?: number) {
     queryKey: ["comments", reportId],
     queryFn: async () => {
       if (!reportId) return [];
-      const res = await axios.get(`${API_URL}/comments/?report_id=${reportId}`, {
+      const res = await axios.get(`${API_URL}/comments/?report=${reportId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      return res.data;
+      return res.data.results || res.data; // Gérer la pagination
     },
     enabled: !!reportId,
   });
 
   // 📌 2. Ajouter un commentaire
   const addCommentMutation = useMutation({
-    mutationFn: async (content: string) => {
+    mutationFn: async (contenu: string) => {
       if (!reportId) throw new Error("reportId is required");
       const res = await axios.post(
         `${API_URL}/comments/`,
-        { content, report_id: reportId },
+        { contenu, report: reportId }, // Utiliser "contenu" et "report" comme dans le backend
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", reportId] });
+      queryClient.invalidateQueries({ queryKey: ["reports"] }); // Rafraîchir aussi les reports
     },
   });
 
@@ -51,7 +52,7 @@ export default function useComments(reportId?: number) {
   });
 
   return {
-    data: commentsQuery.data,
+    data: commentsQuery.data || [],
     isLoading: commentsQuery.isPending,
     error: commentsQuery.error,
 

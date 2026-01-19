@@ -54,18 +54,18 @@ export default function useAuth() {
   }, []);
 
   return {
-  token,
-  user: meQuery.data,
-  isLoadingUser: meQuery.isPending,
-  userError: meQuery.error,
+    token,
+    user: meQuery.data,
+    isLoadingUser: meQuery.isPending,
+    userError: meQuery.error,
 
-  // Mutations
-  login: loginMutation.mutateAsync, // <-- changer mutate en mutateAsync
-  isLoggingIn: loginMutation.isPending,
-  loginError: loginMutation.error,
+    // Mutations
+    login: loginMutation.mutateAsync, // <-- changer mutate en mutateAsync
+    isLoggingIn: loginMutation.isPending,
+    loginError: loginMutation.error,
 
-  // Logout
-  logout,
-};
+    // Logout
+    logout,
+  };
 
 }
