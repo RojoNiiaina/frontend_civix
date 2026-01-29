@@ -24,7 +24,18 @@ export default function LoginPage() {
 
     try {
       await login({ email, password })
-      router.push("/feed") // redirection après succès
+      const { role } = user!
+      // On attend que le hook useAuth mette à jour user
+      setTimeout(() => {
+        if (role === "agent") {
+          router.push("/agent")
+        } else if (role === "admin") {
+          router.push("/admin")
+        } else {
+          router.push("/feed")
+        }
+      }, 300)
+      // Note : ce timeout est un contournement simple pour attendre le refresh du user dans le hook. Pour une vraie solution, il faudrait améliorer le hook pour retourner le user après login.
     } catch (error: any) {
       setErrorMessage(error?.response?.data?.detail || "Login failed")
     }

@@ -7,13 +7,18 @@ export function cn(...inputs: ClassValue[]) {
 
 // lib/utils/models.ts
 
+export type statutUser = "user" | "agent" | "admin"
+
 export interface User {
   id: number;
   nom: string;
   email: string;
-  role?: string;
+  role: statutUser;
   statut?: string;
   date_inscription?: string; // ISO string
+  cin?: string;
+  telephone?: string;
+  photo?: string;
 }
 
 export interface Category {
@@ -24,7 +29,7 @@ export interface Category {
   created_at?: string; // ISO string
 }
 
-export type ReportStatus = "en_attente" | "en_cours" | "resolu" | "rejete";
+export type ReportStatus = "en_attente" | "en_cours" | "resolu" | "rejete" | "approuve";
 
 export interface Report {
   id: number;
@@ -33,6 +38,7 @@ export interface Report {
   lieu: string;
   image?: string; // URL
   like: number;
+  statut: ReportStatus;
   like_count: number;
   is_liked: boolean;
   created_at: string; // ISO string

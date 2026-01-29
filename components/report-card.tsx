@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Heart, MessageCircle, Share2, MapPin, MoreVertical, Send } from "lucide-react"
+import { Heart, MessageCircle, Share2, MapPin, MoreVertical, Send, Edit2, Copy, Flag, Trash2, BadgeCheck, Ban} from "lucide-react"
 import Image from "next/image"
 
 import type { ReportStatus } from "@/lib/utils"
@@ -14,7 +14,12 @@ import { Report } from "@/lib/utils"
 import { User } from "@/lib/utils"
 import useLikes from "@/hooks/useLikes"
 import useComments from "@/hooks/useComments"
-
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "./ui/dropdown-menu"
+import useAuth from "@/hooks/useAuth"
+import useReports from "@/hooks/useReports"
+import { ShareDialog } from "./share-dialog"
+import { title } from "process"
+import Link from "next/link"
 export function ReportCard({
   id,
   user : User,
@@ -23,46 +28,43 @@ export function ReportCard({
   lieu,
   like_count,
   is_liked,
+  statut,
 }: Report) {
   const [showComments, setShowComments] = useState(false)
   const [commentText, setCommentText] = useState("")
   const { toggleLike, isToggling } = useLikes()
   const { data: comments, addComment, isAdding } = useComments(id)
-  const statusColors = {
-    pending: "bg-amber-500 text-white",
-    "in-progress": "bg-blue-500 text-white",
-    resolved: "bg-emerald-500 text-white",
+  const [isShareOpen, setIsShareOpen] = useState(false)
+
+  const {approuveReport} = useReports()
+
+  const { user } = useAuth()
+  const isAgent = user?.role === 'agent'
+  
+  // Handlers pour le menu
+  const Approuver = () => {
+    approuveReport({id: Number(id)}, {
+      onSuccess: () => {
+        alert('report bien approuvé')
+      },
+      onError: () => {
+        alert("Failed to approuver report. Please try again.")
+      }
+    })
   }
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
+  const handleDelete = () => {
+    console.log("[v0] Supprimer la publication:", id)
+    // À implémenter : ouvrir un dialog de confirmation et supprimer
   }
 
-  const statusConfig: Record<
-  ReportStatus,
-  { label: string; className: string }
-> = {
-  en_attente: {
-    label: "En attente",
-    className: "bg-amber-500 text-white",
-  },
-  en_cours: {
-    label: "En cours",
-    className: "bg-blue-500 text-white",
-  },
-  resolu: {
-    label: "Résolu",
-    className: "bg-emerald-500 text-white",
-  },
-  rejete: {
-    label: "Rejeté",
-    className: "bg-rose-500 text-white",
-  },
-}
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}?report=${id}`
+    navigator.clipboard.writeText(url)
+    console.log("[v0] Lien copié:", url)
+    // Vous pouvez ajouter un toast pour confirmer la copie
+  }
+
 
 
   // Construire l'URL complète de l'image
@@ -80,6 +82,22 @@ export function ReportCard({
     return `http://localhost:8000/media/${image}`
   }
 
+  const getProfileImageUrl = () => {
+    if (!User?.photo) return null
+    // Si l'image commence par http, c'est déjà une URL complète (retournée par le serializer)
+    if (User.photo.startsWith('http://') || User.photo.startsWith('https://')) {
+      return User.photo
+    }
+    // Si l'image commence par /media/, c'est une URL relative du backend Django
+    if (User.photo.startsWith('/media/')) {
+      return `http://localhost:8000${User.photo}`
+    }
+    // Sinon, essayer de construire l'URL complète
+    return `http://localhost:8000/media/${User.photo}`
+  }
+
+  const profileImageUrl = getProfileImageUrl() 
+
   const imageUrl = getImageUrl()
   
   // URL statique de test - À remplacer par imageUrl après test
@@ -92,72 +110,166 @@ export function ReportCard({
   console.log("Image URL:", imageUrl, "Display URL:", displayImageUrl)
 
   return (
-    !image ? (
-      <Card>
-        <div className="p-6 space-y-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-11 w-11">
-                {/* <AvatarImage src={author.avatar || "/placeholder.svg"} alt={author.name} /> */}
-                {/* <AvatarFallback className="bg-primary/10 text-primary">{getInitials(author.name)}</AvatarFallback> */}
-              </Avatar>
-              <div>
-                <p className="font-semibold leading-tight">{User.nom}</p>
-                {/* <p className="text-xs text-muted-foreground">{timeAgo}</p> */}
-              </div>
+    !image ?(
+      <Card className="w-full overflow-hidden bg-card border-0 shadow-md hover:shadow-lg transition-shadow duration-300 -gap-6">
+        {/* Header Section - Author Info */}
+        <div className="p-4 flex items-start justify-between">
+          <div className="flex items-center gap-3 flex-1">
+            {
+              profileImageUrl ? 
+              (
+                <div>
+                  <img
+                    className="h-10 w-10 rounded-full"
+                    src={profileImageUrl} alt="" 
+                  />
+                </div>
+              ) :
+              (
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {User?.nom?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              )
+            }
+            
+            <div className="flex-1">
+              <p className="font-semibold flex items-center gap-2 text-sm leading-tight">
+                <Link href={`profile/${User.id}`} className="hover:border-b hover:border-gray-800 pb-0">
+                  {User.nom} 
+                </Link>
+                {User.role === "agent" && 
+                  <span className="text-xs">
+                    <BadgeCheck className="h-4 w-4 text-green-500" />
+                  </span>
+                }
+              </p>
+              <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString()}</p>
             </div>
-           
           </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground">
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {
+                  statut !== 'approuve' &&
+                  <div>
+                    <DropdownMenuItem onClick={Approuver} className="gap-2 hover:bg-muted hover:text-foreground">
+                      <Edit2 className="h-4 w-4" />
+                      <span>Approuver la publication</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator /> 
+                    <DropdownMenuItem onClick={handleCopyLink} className="gap-2 hover:bg-muted hover:text-foreground">
+                      <Copy className="h-4 w-4" />
+                      <span>Refuser la publication</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </div>
+                }
+                {
+                  user?.id === User.id &&
+                  <DropdownMenuItem onClick={handleDelete} className="gap-2 text-destructive focus:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                    <span>Supprimer la publication</span>
+                  </DropdownMenuItem>
+                }
+                {
+                  statut === 'approuve' &&
+                  <DropdownMenuItem onClick={handleCopyLink} className="gap-2 ">
+                    <Copy className="h-4 w-4" />
+                    <span>Copier le lien</span>
+                  </DropdownMenuItem>
+                }
+              </DropdownMenuContent>
+            </DropdownMenu>
+          
+          
+        </div>
 
-          <div className="space-y-2">
-            {/* <h3 className="text-lg font-bold leading-snug">{title}</h3> */}
-            <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+        {/* Description Section */}
+        <div className="px-4 pb-3">
+          <div className="flex items-center justify-end gap-0.5 text-muted-foreground mt-2">
+            <MapPin className="h-4 w-4" />
+            <span className="text-xs">{lieu}</span>
           </div>
+          <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">{description}</p>
+        </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span className="text-sm">{lieu}</span>
-            </div>
-            {/* <Badge className={` font-semibold`}>
-              {status === "in-progress" ? "In Progress" : status.charAt(0).toUpperCase() + status.slice(1)}
-            </Badge> */}
-          </div>
-
-          <div className="flex items-center gap-2 border-t pt-4">
+      
+        {/* Actions Section - Facebook Style */}
+        <div className="px-4 py-2 border-t border-border">
+          <div className="flex items-center gap-1">
             <Button 
               variant="ghost" 
               size="sm" 
-              className={`flex-1 gap-2 ${is_liked ? 'text-red-500' : ''}`}
+              className={`flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted ${is_liked ? 'text-red-500 hover:text-red-600' : ''}`}
               onClick={() => toggleLike(id)}
               disabled={isToggling}
             >
               <Heart className={`h-4 w-4 ${is_liked ? 'fill-current' : ''}`} />
-              <span>{like_count || 0}</span>
+              <span className="text-xs">{like_count || 0}</span>
             </Button>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="flex-1 gap-2"
+              className="flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
               onClick={() => setShowComments(!showComments)}
             >
               <MessageCircle className="h-4 w-4" />
-              <span>{comments?.length || 0}</span>
+              <span className="text-xs">{comments?.length || 0}</span>
             </Button>
-            <Button variant="ghost" size="sm" className="flex-1">
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsShareOpen(true)}
+              size="sm" 
+              className="flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+            >
               <Share2 className="h-4 w-4" />
+              <span className="text-xs">Partager</span>
             </Button>
           </div>
         </div>
+
         {/* Comments Section */}
         {showComments && (
-          <div className="border-t p-4 space-y-4">
-            <h3 className="font-semibold">Commentaires ({comments?.length || 0})</h3>
-            
+          <div className="border-t border-border p-4 space-y-4 bg-muted/30">
+            {/* Comments List */}
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {comments && comments.length > 0 ? (
+                comments.map((comment) => (
+                  <div key={comment.id} className="flex gap-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                        {comment.user?.nom?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 bg-muted rounded-lg p-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm">{comment.user?.nom || 'Utilisateur'}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(comment.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-foreground mt-1">{comment.contenu}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Aucun commentaire pour le moment
+                </p>
+              )}
+            </div>
+
             {/* Comment Form */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 pt-2 border-t border-border">
               <Input
                 placeholder="Ajouter un commentaire..."
+                className="text-sm"
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 onKeyPress={(e) => {
@@ -175,52 +287,114 @@ export function ReportCard({
                   }
                 }}
                 disabled={isAdding || !commentText.trim()}
+                size="sm"
               >
                 <Send className="h-4 w-4" />
               </Button>
             </div>
-
-            {/* Comments List */}
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {comments && comments.length > 0 ? (
-                comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                        {comment.user?.nom?.charAt(0).toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm">{comment.user?.nom || 'Utilisateur'}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(comment.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">{comment.contenu}</p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Aucun commentaire pour le moment
-                </p>
-              )}
-            </div>
           </div>
         )}
+        <ShareDialog
+          open={isShareOpen}
+          onOpenChange={setIsShareOpen}
+          title={title}
+          description={description}
+        />
       </Card>
-    )
-    : (
-    <Card className="group relative overflow-hidden border-none bg-card shadow-lg transition-all duration-300 hover:shadow-2xl">
-      {/* Image Section - Full bleed */}
-      {displayImageUrl && ( // Afficher si on a une URL d'image
-        <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
-          {/* Test avec img standard pour déboguer */}
+    ) : 
+    <Card className="w-full overflow-hidden bg-card border-0 shadow-md hover:shadow-lg transition-shadow duration-300 -gap-6">
+      {/* Header Section - Author Info */}
+      <div className="p-4 flex items-start justify-between">
+        <div className="flex items-center gap-3 flex-1">
+          {
+              profileImageUrl ? 
+              (
+                <div>
+                  <img
+                    className="h-10 w-10 rounded-full"
+                    src={profileImageUrl} alt="" 
+                  />
+                </div>
+              ) :
+              (
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {User?.nom?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              )
+            }
+          <div className="flex-1">
+           <p className="font-semibold flex items-center gap-2 text-sm leading-tight">
+                <Link href={`profile/${User.id}`} className="hover:border-b hover:border-gray-800 pb-0">
+                  {User.nom} 
+                </Link>
+                {User.role === "agent" && 
+                  <span className="text-xs">
+                    <BadgeCheck className="h-4 w-4 text-green-500" />
+                  </span>
+                }
+              </p>
+            <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString()}</p>
+          </div>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground">
+              <MoreVertical className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {
+              statut !== 'approuve' &&
+              user?.role === 'agent' &&
+                <div>
+                  <DropdownMenuItem onClick={Approuver} className="gap-2 hover:bg-muted hover:text-foreground">
+                    <Edit2 className="h-4 w-4" />
+                    <span>Approuver la publication</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator /> 
+                  <DropdownMenuItem onClick={handleCopyLink} className="gap-2 hover:bg-muted hover:text-foreground">
+                    <Copy className="h-4 w-4" />
+                    <span>Refuser la publication</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </div>
+                }
+                {
+                  user?.id === User.id &&
+                  <DropdownMenuItem onClick={handleDelete} className="gap-2 text-destructive focus:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                    <span>Supprimer la publication</span>
+                  </DropdownMenuItem>
+                }
+                {
+                  statut === 'approuve' &&
+                  <DropdownMenuItem onClick={handleCopyLink} className="gap-2 ">
+                    <Copy className="h-4 w-4" />
+                    <span>Copier le lien</span>
+                  </DropdownMenuItem>
+                }
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Description Section */}
+      <div className="px-4 ">
+        <div className="flex items-center justify-end gap-0.5 text-muted-foreground mt-2">
+          <MapPin className="h-4 w-4" />
+          <span className="text-xs">{lieu}</span>
+        </div>
+        <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">{description}</p>
+      </div>
+
+      {/* Image Section - Horizontal */}
+      {displayImageUrl && (
+        <div className="relative w-full bg-muted overflow-hidden">
           <img 
-            src={displayImageUrl} 
+            src={displayImageUrl || "/placeholder.svg"} 
             alt={description || "Report image"} 
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-auto object-cover transition-transform duration-300 hover:scale-105"
             onError={(e) => {
               console.error("Erreur de chargement d'image:", displayImageUrl, e);
             }}
@@ -228,102 +402,79 @@ export function ReportCard({
               console.log("Image chargée avec succès:", displayImageUrl);
             }}
           />
-          {/* Version Next.js Image (commentée pour test) */}
-          {/* <Image 
-            src={testImageUrl}
-            alt={description || "Report image"} 
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105" 
-          /> */}
-
-          {/* Gradient overlay for better text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-          {/* Floating Status Badge */}
-          {/* <Badge className={`absolute right-4 top-4 px-3 py-1.5 font-semibold shadow-lg `}>
-            {status === "in-progress" ? "In Progress" : status.charAt(0).toUpperCase() + status.slice(1)}
-          </Badge> */}
-
-          {/* Floating Action Buttons - TikTok style */}
-          <div className="absolute bottom-20 right-4 flex flex-col gap-4">
-            <button 
-              onClick={() => toggleLike(id)}
-              disabled={isToggling}
-              className="flex flex-col items-center gap-1 transition-transform hover:scale-110 disabled:opacity-50"
-            >
-              <div className={`flex h-12 w-12 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm shadow-lg ${is_liked ? 'text-red-500' : 'text-foreground'}`}>
-                <Heart className={`h-5 w-5 ${is_liked ? 'fill-current' : ''}`} />
-              </div>
-              <span className="text-xs font-semibold text-white drop-shadow-lg">{like_count || 0}</span>
-            </button>
-
-            <button 
-              onClick={() => setShowComments(!showComments)}
-              className="flex flex-col items-center gap-1 transition-transform hover:scale-110"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm shadow-lg">
-                <MessageCircle className="h-5 w-5 text-foreground" />
-              </div>
-              <span className="text-xs font-semibold text-white drop-shadow-lg">{comments?.length || 0}</span>
-            </button>
-
-            <button className="transition-transform hover:scale-110">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm shadow-lg">
-                <Share2 className="h-5 w-5 text-foreground" />
-              </div>
-            </button>
-          </div>
-
-            {/* Trois points pour le menu contextuel */}
-          <div className="absolute top-0 right-0">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:bg-gray-500/20">
-              <MoreVertical className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Content Overlay - Bottom */}
-          <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-            {/* Author Info */}
-            <div className="mb-3 flex items-center gap-3">
-              <Avatar className="h-11 w-11 border-2 border-white shadow-lg">
-                {/* <AvatarImage src={user.avatar || "/placeholder.svg"} alt={author.name} /> */}
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {/* {getInitials(user.name)} */}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <p className="font-semibold leading-tight drop-shadow-lg">{User.nom}</p>
-                <p className="text-xs text-white/90 drop-shadow-lg">{User.nom}</p>
-              </div>
-             
-            </div>
-
-            {/* Title and Description */}
-            <div className="mb-2 space-y-1">
-              {/* <h3 className="text-pretty text-lg font-bold leading-snug drop-shadow-lg">{title}</h3> */}
-              <p className="text-pretty text-sm leading-relaxed text-white/95 drop-shadow-lg line-clamp-2">
-                {description}
-              </p>
-            </div>
-
-            {/* Location */}
-            <div className="flex items-center gap-1.5 text-white/95">
-              <MapPin className="h-4 w-4" />
-              <span className="text-sm font-medium drop-shadow-lg">{lieu}</span>
-            </div>
-          </div>
         </div>
       )}
 
+      {/* Actions Section - Facebook Style */}
+      <div className="px-4 py-2 border-t border-border">
+        <div className="flex items-center gap-1">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={`flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted ${is_liked ? 'text-red-500 hover:text-red-600' : ''}`}
+            onClick={() => toggleLike(id)}
+            disabled={isToggling}
+          >
+            <Heart className={`h-4 w-4 ${is_liked ? 'fill-current' : ''}`} />
+            <span className="text-xs">{like_count || 0}</span>
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+            onClick={() => setShowComments(!showComments)}
+          >
+            <MessageCircle className="h-4 w-4" />
+            <span className="text-xs">{comments?.length || 0}</span>
+          </Button>
+          <Button 
+            variant="ghost" 
+            onClick={() => setIsShareOpen(true)}
+            size="sm" 
+            className="flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+          >
+            <Share2 className="h-4 w-4" />
+            <span className="text-xs">Partager</span>
+          </Button>
+        </div>
+      </div>
+
       {/* Comments Section */}
       {showComments && (
-        <div className="border-t p-4 space-y-4">
-          <h3 className="font-semibold">Commentaires ({comments?.length || 0})</h3>
-          
+        <div className="border-t border-border p-4 space-y-4 bg-muted/30">
+          {/* Comments List */}
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {comments && comments.length > 0 ? (
+              comments.map((comment) => (
+                <div key={comment.id} className="flex gap-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                      {comment.user?.nom?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 bg-muted rounded-lg p-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm">{comment.user?.nom || 'Utilisateur'}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(comment.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-foreground mt-1">{comment.contenu}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Aucun commentaire pour le moment
+              </p>
+            )}
+          </div>
+
           {/* Comment Form */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-2 border-t border-border">
             <Input
               placeholder="Ajouter un commentaire..."
+              className="text-sm"
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               onKeyPress={(e) => {
@@ -341,41 +492,19 @@ export function ReportCard({
                 }
               }}
               disabled={isAdding || !commentText.trim()}
+              size="sm"
             >
               <Send className="h-4 w-4" />
             </Button>
           </div>
-
-          {/* Comments List */}
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {comments && comments.length > 0 ? (
-              comments.map((comment) => (
-                <div key={comment.id} className="flex gap-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {comment.user?.nom?.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm">{comment.user?.nom || 'Utilisateur'}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(comment.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{comment.contenu}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Aucun commentaire pour le moment
-              </p>
-            )}
-          </div>
         </div>
       )}
+      <ShareDialog
+        open={isShareOpen}
+        onOpenChange={setIsShareOpen}
+        title={title}
+        description={description}
+      />
     </Card>
-    )
   )
 }

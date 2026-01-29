@@ -3,6 +3,8 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import AuthGuard from "@/components/auth/AuthGuard"
+import AgentGuard from "@/components/auth/AgentGuard"
+import QueryProvider from "@/components/ui/QueryProvider"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -39,9 +41,13 @@ export default function AgentLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <AuthGuard>
-          {children}
-        </AuthGuard>
+        <QueryProvider>
+          <AuthGuard>
+            <AgentGuard>
+              {children}
+            </AgentGuard>
+          </AuthGuard>
+        </QueryProvider>
         <Analytics />
       </body>
     </html>

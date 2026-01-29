@@ -10,36 +10,48 @@ import { MapPin, ArrowLeft, Award, FileText, Heart, Loader2 } from "lucide-react
 import { ReportCard } from "@/components/report-card"
 import useMyReports from "@/hooks/useMyReports"
 import useAuth from "@/hooks/useAuth"
+import EditProfile from "./EditProfile"
+import { useState } from "react"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 export default function ProfilePage() {
   const { user, isLoadingUser, userError } = useAuth()
   const reportsHook = useMyReports()
-
-  if (isLoadingUser) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    )
-  }
-
-  if (userError) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-red-500">Impossible de charger votre profil.</p>
-      </div>
-    )
-  }
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const router = useRouter()
 
   if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Aucun utilisateur connecté.</p>
-      </div>
-    )
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen">
+          <p className="text-muted-foreground">Aucun utilisateur connecté.</p>
+          <Button onClick={() => router.replace('/login')}>login</Button>
+        </div>
+      )
+  }
+  const { id, nom, email, role, statut, date_inscription, photo } = user
+
+  const getImageUrl = () => {
+    if (!photo) return null
+    // Si l'photo commence par http, c'est déjà une URL complète (retournée par le serializer)
+    if (photo.startsWith('http://') || photo.startsWith('https://')) {
+      return photo
+    }
+    // Si l'photo commence par /media/, c'est une URL relative du backend Django
+    if (photo.startsWith('/media/')) {
+      return `http://localhost:8000${photo}`
+    }
+    // Sinon, essayer de construire l'URL complète
+    return `http://localhost:8000/media/${photo}`
   }
 
-  const { id, nom, email, role, statut, date_inscription } = user
+  const imageUrl = getImageUrl()
+  const testImageUrl = "http://localhost:8000/media/account.jpg" // URL statique de test - maintenant directement dans reports/
+  
+  // Utiliser l'URL de test pour déboguer, ou l'URL réelle si disponible
+  const displayImageUrl = imageUrl || testImageUrl
+  
+  
 
   const joinDate =
     date_inscription ? new Date(date_inscription) : null
@@ -88,32 +100,50 @@ export default function ProfilePage() {
           <Card className="mb-6">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center gap-4 sm:flex-row">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src="/abstract-geometric-shapes.png" alt="John Doe" />
-                  <AvatarFallback className="bg-primary/10 text-primary text-2xl">JD</AvatarFallback>
-                </Avatar>
+                <div>
+                  {
+                    !displayImageUrl ? (
+                      <Avatar className="h-24 w-24">
+                        <AvatarImage src={user.photo} alt={nom} />
+                        <AvatarFallback className="bg-primary/10 text-primary text-2xl">{nom ? nom[0] : "U"}</AvatarFallback>
+                      </Avatar>
+                    ): (
+                      <img 
+                        src={displayImageUrl || "/placeholder.svg"} 
+                        alt={"Profile image"} 
+                        className="w-24 h-24 object-cover transition-transform duration-300 hover:scale-105 rounded-full"
+                        onError={(e) => {
+                          console.error("Erreur de chargement d'image:", displayImageUrl, e);
+                        }}
+                        onLoad={() => {
+                          console.log("Image chargée avec succès:", displayImageUrl);
+                        }}
+                      />
+                    )
+                  }
+                </div>
                 <div className="flex-1 text-center sm:text-left">
                   <h1 className="mb-1 text-2xl font-bold">{nom}</h1>
                   <p className="mb-3 text-muted-foreground">
                     {formattedJoinDate ? `Joined ${formattedJoinDate}` : "Member"}
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                    <Badge variant="secondary" className="gap-1">
+                    <Badge variant="outline" className="gap-1 bg-blue-200">
                       <Award className="h-3 w-3" />
-                      Active Contributor
+                      {user.role === "user" ? "Citoyen": "Agent"}
                     </Badge>
                     <Badge variant="outline" className="gap-1">
                       {userStats.reputationScore} reputation
                     </Badge>
                   </div>
                 </div>
-                <Button>Edit Profile</Button>
+                <Button className="sm:mt-4 font-semibold" onClick={() => setIsEditDialogOpen(true)}>Edit Profile</Button>
               </div>
             </CardContent>
           </Card>
 
           {/* Stats */}
-          <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -158,14 +188,15 @@ export default function ProfilePage() {
                 <div className="text-2xl font-bold"></div>
               </CardContent>
             </Card>
-          </div>
+          </div> */}
 
           {/* Activity Tabs */}
           <Tabs defaultValue="reports">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="reports">My Reports</TabsTrigger>
-              <TabsTrigger value="supported">Supported</TabsTrigger>
-              <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="reports">Mes publications</TabsTrigger>
+              <TabsTrigger value="approuve">Approuvée</TabsTrigger>
+              <TabsTrigger value="en_attente">En attente</TabsTrigger>
+              <TabsTrigger value="rejete">Refusée</TabsTrigger>
             </TabsList>
             <TabsContent value="reports" className="mt-6 space-y-4">
               {isLoading ? (
@@ -190,37 +221,80 @@ export default function ProfilePage() {
                 ))
               )}
             </TabsContent>
-            <TabsContent value="supported" className="mt-6">
-              <div className="rounded-lg border border-dashed border-border p-12 text-center">
-                <Heart className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="mb-2 font-semibold">No supported reports yet</h3>
-                <p className="text-sm text-muted-foreground">
-                  Support reports in your community to show your engagement
-                </p>
-              </div>
+            <TabsContent value="approuve" className="mt-6 space-y-4">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : error ? (
+                <div className="rounded-lg border border-dashed border-border p-12 text-center">
+                  <p className="text-red-500">Erreur lors du chargement de vos publications.</p>
+                </div>
+              ) : reports.filter(report => report.statut === 'approuve').length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border p-12 text-center">
+                  <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="mb-2 font-semibold">Aucune publication approuvée</h3>
+                </div>
+              ) : (
+                reports.filter(report => report.statut === 'approuve').map((report, index) => (
+                <div key={index} className="mb-4">
+                  <ReportCard {...report} />
+                </div>
+              ))
+              )}
             </TabsContent>
-            <TabsContent value="activity" className="mt-6">
-              <div className="space-y-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex gap-4">
-                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <FileText className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm">
-                          <span className="font-semibold">Created a new report</span> - Pothole on Main Street
-                        </p>
-                        <p className="text-xs text-muted-foreground">2 hours ago</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+            <TabsContent value="en_attente" className="mt-6 space-y-4">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : error ? (
+                <div className="rounded-lg border border-dashed border-border p-12 text-center">
+                  <p className="text-red-500">Erreur lors du chargement de vos publications.</p>
+                </div>
+              ) : reports.filter(report => report.statut === 'en_attente').length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border p-12 text-center">
+                  <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="mb-2 font-semibold">Aucune publication en attente de validation</h3>
+                </div>
+              ) : (
+                reports.filter(report => report.statut === 'en_attente').map((report, index) => (
+                <div key={index} className="mb-4">
+                  <ReportCard {...report} />
+                </div>
+              ))
+              )}
+            </TabsContent>
+            <TabsContent value="rejete" className="mt-6 space-y-4">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : error ? (
+                <div className="rounded-lg border border-dashed border-border p-12 text-center">
+                  <p className="text-red-500">Erreur lors du chargement de vos publications.</p>
+                </div>
+              ) : reports.filter(report => report.statut === 'rejete').length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border p-12 text-center">
+                  <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="mb-2 font-semibold">Aucune publication réjetée</h3>
+                </div>
+              ) : (
+                reports.filter(report => report.statut === 'rejete').map((report, index) => (
+                  <div key={index} className="mb-4">
+                    <ReportCard {...report} />
+                  </div>
+              ))
+              )}
             </TabsContent>
           </Tabs>
         </div>
       </div>
+
+      <EditProfile
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+      />
     </div>
   )
 }

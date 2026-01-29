@@ -13,7 +13,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const token = localStorage.getItem("token")
     
     if (!token) {
-      router.push("/login")
+      router.replace("/login")
     } else {
       setIsAuthenticated(true)
     }

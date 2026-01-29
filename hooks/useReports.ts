@@ -97,6 +97,26 @@ export default function useReports() {
     },
   });
 
+  // 📌 4. Mutation : Appouver un report
+  const ApprouveMutation = useMutation({
+    mutationFn: async ({ id }: { id: number }) => {
+      const res = await axios.patch(
+        `${api}/reports/${id}/approve/`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      queryClient.invalidateQueries({ queryKey: ["my-reports"] });
+    },
+  });
+
   return {
     // Query
     data: reportsQuery.data,
@@ -117,5 +137,10 @@ export default function useReports() {
     updateReport: updateReportMutation.mutate,
     isUpdating: updateReportMutation.isPending,
     updateError: updateReportMutation.error,
+    
+    // Mutation approuve report
+    approuveReport: ApprouveMutation.mutate,
+    isApprouving: ApprouveMutation.isPending,
+    approuveError: ApprouveMutation.error,
   };
 }
