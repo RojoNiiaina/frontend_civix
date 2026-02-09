@@ -79,9 +79,9 @@ export function ShareDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Share Report</DialogTitle>
+          <DialogTitle>Partager le rapport</DialogTitle>
           <DialogDescription>
-            Share this report on your favorite social media platform
+            Partagez ce rapport sur vos plateformes de médias sociaux préférées
           </DialogDescription>
         </DialogHeader>
 
@@ -106,7 +106,7 @@ export function ShareDialog({
 
           {/* Copy Link Section */}
           <div className="border-t pt-4">
-            <p className="mb-2 text-sm font-medium text-muted-foreground">Or copy the link</p>
+            <p className="mb-2 text-sm font-medium text-muted-foreground">Ou copier le lien</p>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -121,7 +121,7 @@ export function ShareDialog({
                 className="gap-2 bg-transparent"
               >
                 <Copy className="h-4 w-4" />
-                {copied ? 'Copied!' : 'Copy'}
+                {copied ? 'Copié !' : 'Copier'}
               </Button>
             </div>
           </div>

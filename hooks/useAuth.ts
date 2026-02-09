@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import type { User } from "../lib/utils";
 import { useRouter } from "next/navigation";
+import api from "@/lib/api";
 
 const API_URL = "http://localhost:8000/api";
 
@@ -39,7 +40,7 @@ export default function useAuth() {
     queryKey: ["me"],
     queryFn: async () => {
       if (!token) return null;
-      const res = await axios.get(`${API_URL}/auth/me/`, {
+      const res = await api.get(`${API_URL}/auth/me/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return res.data;

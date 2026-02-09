@@ -47,9 +47,10 @@ export interface Report {
 export interface Notification {
   id: number;
   message: string;
-  user_id: number;
-  read: boolean;
+  lu: boolean; // "lu" comme dans la version mobile
   created_at: string;
+  user?: User; // Utilisateur qui a déclenché la notification
+  report?: number; // ID du rapport concerné
 }
 
 export interface Comment {
@@ -58,4 +59,22 @@ export interface Comment {
   user: User;
   contenu: string; // Note: backend utilise "contenu" pas "content"
   created_at: string;
+}
+
+export interface Message {
+  id: number;
+  sender: User;
+  recipient?: User;
+  content: string;
+  image?: string;
+  created_at: string;
+  is_read?: boolean;
+}
+
+export interface Conversation {
+  id: number;
+  user: User;
+  lastMessage?: Message;
+  unreadCount: number;
+  isOnline?: boolean;
 }

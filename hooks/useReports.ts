@@ -100,18 +100,23 @@ export default function useReports() {
   // 📌 4. Mutation : Appouver un report
   const ApprouveMutation = useMutation({
     mutationFn: async ({ id }: { id: number }) => {
-      const res = await axios.patch(
-        `${api}/reports/${id}/approve/`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      return res.data;
+      try {
+        const res = await axios.patch(
+          `${api}/reports/${id}/approve/`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        return res.data;
+      } catch (error) {
+        console.log(error);
+      }
     },
     onSuccess: () => {
+      
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       queryClient.invalidateQueries({ queryKey: ["my-reports"] });
     },

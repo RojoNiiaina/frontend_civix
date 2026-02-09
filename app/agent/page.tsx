@@ -55,6 +55,12 @@ export default function AgentDashboard() {
               Gestion des citoyens
             </Button>
           </Link>
+          <Link href="/chat">
+            <Button variant="outline" className="gap-2 bg-transparent">
+              <Users className="h-4 w-4" />
+              Messages de discussions
+            </Button>
+          </Link>
         </div>
         {/* Stats Cards */}
         <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">

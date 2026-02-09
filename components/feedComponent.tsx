@@ -27,11 +27,6 @@ export default function FeedComponent() {
   } = useReports()
 
 
-
-  const okey = () => {
-    alert(localStorage.getItem("token"))
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <NavBar />

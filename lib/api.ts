@@ -134,4 +134,23 @@ export const notificationsAPI = {
   countUnread: () => api.get("/notifications/count_unread/"),
 };
 
+export const chatAPI = {
+  // Messages
+  getMessages: (userId?: number) => {
+    if (userId) {
+      return api.get(`/chat/messages/${userId}/`);
+    }
+    return api.get("/chat/");
+  },
+  sendMessage: (data: { content: string; recipient?: number | null }) =>
+    api.post("/chat/create/", data),
+  sendMessageWithImage: (formData: FormData) =>
+    api.post("/chat/create/", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
+  getConversations: () => api.get("/chat/conversations/"),
+};
+
 export default api;

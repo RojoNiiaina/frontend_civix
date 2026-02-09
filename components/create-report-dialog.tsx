@@ -39,7 +39,7 @@ export function CreateReportDialog() {
   
   const handleSubmit = () => {
     if (!formData.description) {
-      alert("Please fill in all required fields")
+      alert("Veuillez remplir tous les champs obligatoires")
       return
     }
     
@@ -60,7 +60,7 @@ export function CreateReportDialog() {
       },
       onError: (error) => {
         console.error("Failed to create report:", error)
-        alert("Failed to create report. Please try again.")
+        alert("Échec de la création du rapport. Veuillez réessayer.")
       }
     })
   }
@@ -73,14 +73,14 @@ export function CreateReportDialog() {
           className="fixed bottom-6 right-6 z-50 h-16 w-16 rounded-full p-0 shadow-2xl transition-all hover:scale-110 hover:shadow-xl md:h-auto md:w-auto md:rounded-xl md:px-8 md:py-4"
         >
           <Plus className="h-7 w-7 md:mr-2" />
-          <span className="hidden md:inline md:text-base md:font-semibold">New Report</span>
+          <span className="hidden md:inline md:text-base md:font-semibold">Nouveau rapport</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Create New Report</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Créer un nouveau rapport</DialogTitle>
           <DialogDescription className="text-base">
-            Report a civic issue in your community. Include as much detail as possible to help resolve it quickly.
+            Signalez un problème civique dans votre communauté. Incluez autant de détails que possible pour aider à le résoudre rapidement.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-5 py-6">
@@ -90,7 +90,7 @@ export function CreateReportDialog() {
             </Label>
             <Textarea
               id="description"
-              placeholder="Provide detailed information about the issue..."
+              placeholder="Fournissez des informations détaillées sur le problème..."
               rows={5}
               className="resize-none text-base"
               value={formData.description}
@@ -104,11 +104,11 @@ export function CreateReportDialog() {
             <div className="flex items-center gap-3">
               <Button variant="outline" className="flex-1 h-12 bg-muted/50" type="button" onClick={() => document.getElementById('photo-upload')?.click()}>
                 <Camera className="mr-2 h-5 w-5" />
-                Take Photo
+                Prendre une photo
               </Button>
               <Button variant="outline" className="flex-1 h-12 bg-muted/50" type="button" onClick={() => document.getElementById('photo-upload')?.click()}>
                 <Upload className="mr-2 h-5 w-5" />
-                Upload
+                Télécharger
               </Button>
               <input
                 id="photo-upload"
@@ -118,7 +118,7 @@ export function CreateReportDialog() {
                 onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
               />
             </div>
-            <p className="text-xs text-muted-foreground">Add a photo to help identify and resolve the issue faster</p>
+            <p className="text-xs text-muted-foreground">Ajoutez une photo pour aider à identifier et résoudre le problème plus rapidement</p>
             {formData.image && (
               <div className="relative mt-3">
                 <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border">
@@ -144,13 +144,13 @@ export function CreateReportDialog() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="location" className="text-sm font-semibold">
-              Location
+              Lieu
             </Label>
             <div className="flex items-center gap-3">
               <Input
                 id="lieu"
                 className="h-11 flex-1" 
-                placeholder="Your location" 
+                placeholder="Votre lieu" 
                 value={formData.lieu}
                 onChange={(e) => handleInputChange("lieu", e.target.value)}
               />
@@ -162,10 +162,10 @@ export function CreateReportDialog() {
         </div>
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => setOpen(false)} className="h-11 px-6" disabled={isAdding}>
-            Cancel
+            Annuler
           </Button>
           <Button onClick={handleSubmit} className="h-11 px-8 font-semibold" disabled={isAdding}>
-            {isAdding ? "Submitting..." : "Submit Report"}
+            {isAdding ? "Soumission..." : "Soumettre le rapport"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -20,6 +20,8 @@ import useReports from "@/hooks/useReports"
 import { ShareDialog } from "./share-dialog"
 import { title } from "process"
 import Link from "next/link"
+import useNotifications from "@/hooks/useNotifications"
+
 export function ReportCard({
   id,
   user : User,
@@ -35,6 +37,8 @@ export function ReportCard({
   const { toggleLike, isToggling } = useLikes()
   const { data: comments, addComment, isAdding } = useComments(id)
   const [isShareOpen, setIsShareOpen] = useState(false)
+  const {CreateNotification} = useNotifications()
+
 
   const {approuveReport} = useReports()
 
@@ -45,10 +49,10 @@ export function ReportCard({
   const Approuver = () => {
     approuveReport({id: Number(id)}, {
       onSuccess: () => {
-        alert('report bien approuvé')
+        alert('Report approuvé avec succès')
       },
       onError: () => {
-        alert("Failed to approuver report. Please try again.")
+        alert("Échec de l'approuvement du rapport. Veuillez réessayer.")
       }
     })
   }
@@ -115,24 +119,14 @@ export function ReportCard({
         {/* Header Section - Author Info */}
         <div className="p-4 flex items-start justify-between">
           <div className="flex items-center gap-3 flex-1">
-            {
-              profileImageUrl ? 
-              (
-                <div>
-                  <img
-                    className="h-10 w-10 rounded-full"
-                    src={profileImageUrl} alt="" 
-                  />
-                </div>
-              ) :
-              (
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {User?.nom?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              )
-            }
+            <Avatar className="h-10 w-10">
+              <AvatarImage 
+                src={User.photo ? 
+                (User.photo.startsWith('http') ? User.photo : `http://localhost:8000${User.photo}`) 
+                : `http://localhost:8000/media/users/photos/user.png`} 
+                alt={User.nom} 
+              />
+            </Avatar>
             
             <div className="flex-1">
               <p className="font-semibold flex items-center gap-2 text-sm leading-tight">
@@ -165,7 +159,7 @@ export function ReportCard({
                     <DropdownMenuSeparator /> 
                     <DropdownMenuItem onClick={handleCopyLink} className="gap-2 hover:bg-muted hover:text-foreground">
                       <Copy className="h-4 w-4" />
-                      <span>Refuser la publication</span>
+                      <span>Rejeter la publication</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </div>
@@ -243,9 +237,12 @@ export function ReportCard({
                 comments.map((comment) => (
                   <div key={comment.id} className="flex gap-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                        {comment.user?.nom?.charAt(0).toUpperCase() || 'U'}
-                      </AvatarFallback>
+                      <AvatarImage 
+                        src={comment.user?.photo ? 
+                        (comment.user.photo.startsWith('http') ? comment.user.photo : `http://localhost:8000${comment.user.photo}`) 
+                        : `http://localhost:8000/media/users/photos/user.png`} 
+                        alt={comment.user?.nom} 
+                      />
                     </Avatar>
                     <div className="flex-1 bg-muted rounded-lg p-2.5">
                       <div className="flex items-center gap-2">
@@ -306,24 +303,14 @@ export function ReportCard({
       {/* Header Section - Author Info */}
       <div className="p-4 flex items-start justify-between">
         <div className="flex items-center gap-3 flex-1">
-          {
-              profileImageUrl ? 
-              (
-                <div>
-                  <img
-                    className="h-10 w-10 rounded-full"
-                    src={profileImageUrl} alt="" 
-                  />
-                </div>
-              ) :
-              (
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {User?.nom?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              )
-            }
+          <Avatar className="h-10 w-10">
+            <AvatarImage 
+              src={User.photo ? 
+              (User.photo.startsWith('http') ? User.photo : `http://localhost:8000${User.photo}`) 
+              : `http://localhost:8000/media/users/photos/user.png`} 
+              alt={User.nom} 
+            />
+          </Avatar>
           <div className="flex-1">
            <p className="font-semibold flex items-center gap-2 text-sm leading-tight">
                 <Link href={`profile/${User.id}`} className="hover:border-b hover:border-gray-800 pb-0">
@@ -393,7 +380,7 @@ export function ReportCard({
         <div className="relative w-full bg-muted overflow-hidden">
           <img 
             src={displayImageUrl || "/placeholder.svg"} 
-            alt={description || "Report image"} 
+            alt={description || "Image du rapport"} 
             className="w-full h-auto object-cover transition-transform duration-300 hover:scale-105"
             onError={(e) => {
               console.error("Erreur de chargement d'image:", displayImageUrl, e);
@@ -448,9 +435,12 @@ export function ReportCard({
               comments.map((comment) => (
                 <div key={comment.id} className="flex gap-3">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {comment.user?.nom?.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
+                    <AvatarImage 
+                      src={comment.user?.photo ? 
+                      (comment.user.photo.startsWith('http') ? comment.user.photo : `http://localhost:8000${comment.user.photo}`) 
+                      : `http://localhost:8000/media/users/photos/user.png`} 
+                      alt={comment.user?.nom} 
+                    />
                   </Avatar>
                   <div className="flex-1 bg-muted rounded-lg p-2.5">
                     <div className="flex items-center gap-2">

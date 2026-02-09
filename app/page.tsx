@@ -8,7 +8,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -22,7 +22,7 @@ export default function LandingPage() {
               href="#features"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Features
+              Fonctionnalités
             </Link>
             <Link
               href="#impact"
@@ -34,16 +34,16 @@ export default function LandingPage() {
               href="#about"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              About
+              À propos
             </Link>
           </nav>
 
           <div className="flex items-center gap-3">
             <Link href="/login">
-              <Button variant="ghost">Login</Button>
+              <Button variant="ghost">Connexion</Button>
             </Link>
             <Link href="/register">
-              <Button>Get Started</Button>
+              <Button>Commencer</Button>
             </Link>
           </div>
         </div>
@@ -53,24 +53,23 @@ export default function LandingPage() {
       <section className="container mx-auto px-4 py-20 md:py-32">
         <div className="mx-auto max-w-4xl text-center">
           <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/20" variant="secondary">
-            Your Voice, Your City
+            Votre voix, votre ville
           </Badge>
           <h1 className="mb-6 text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl lg:text-7xl">
-            Connect, Report, Transform Your Community
+            Connectez-vous, signalez, transformez votre communauté
           </h1>
           <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground text-pretty md:text-xl">
-            CIVIX is the social civic platform that empowers citizens to report issues, engage with their community, and
-            create real change together.
+            CIVIX est une plateforme sociale civique qui permet aux citoyens de signaler des problèmes, de s'engager avec leur communauté et de créer un réel changement ensemble.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/register">
               <Button size="lg" className="w-full sm:w-auto">
-                Join CIVIX
+                Rejoindre CIVIX
               </Button>
             </Link>
             <Link href="/feed">
               <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent">
-                Explore Feed
+                Explorer le fil
               </Button>
             </Link>
           </div>
@@ -83,19 +82,19 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             <div className="text-center">
               <div className="mb-2 text-3xl font-bold text-primary md:text-4xl">12.5K+</div>
-              <div className="text-sm text-muted-foreground">Issues Reported</div>
+              <div className="text-sm text-muted-foreground">Problèmes signalés</div>
             </div>
             <div className="text-center">
               <div className="mb-2 text-3xl font-bold text-primary md:text-4xl">8.2K</div>
-              <div className="text-sm text-muted-foreground">Issues Resolved</div>
+              <div className="text-sm text-muted-foreground">Problèmes résolus</div>
             </div>
             <div className="text-center">
               <div className="mb-2 text-3xl font-bold text-primary md:text-4xl">25K+</div>
-              <div className="text-sm text-muted-foreground">Active Citizens</div>
+              <div className="text-sm text-muted-foreground">Citoyens actifs</div>
             </div>
             <div className="text-center">
               <div className="mb-2 text-3xl font-bold text-primary md:text-4xl">94%</div>
-              <div className="text-sm text-muted-foreground">Satisfaction Rate</div>
+              <div className="text-sm text-muted-foreground">Taux de satisfaction</div>
             </div>
           </div>
         </div>
@@ -105,10 +104,10 @@ export default function LandingPage() {
       <section id="features" className="container mx-auto px-4 py-20">
         <div className="mb-12 text-center">
           <h2 className="mb-4 text-3xl font-bold tracking-tight text-balance md:text-4xl">
-            Everything You Need for Civic Engagement
+            Tout ce dont vous avez besoin pour l'engagement civique
           </h2>
           <p className="mx-auto max-w-2xl text-muted-foreground text-pretty">
-            Powerful features designed to make civic participation easy, engaging, and impactful
+            Des fonctionnalités puissantes conçues pour rendre la participation civique facile, engageante et impactante
           </p>
         </div>
 
@@ -118,9 +117,9 @@ export default function LandingPage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <MessageSquare className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold">Social Feed</h3>
+              <h3 className="mb-2 text-xl font-semibold">Fil social</h3>
               <p className="text-muted-foreground">
-                Stay connected with your community through a real-time social feed of civic issues and updates
+                Restez connecté avec votre communauté grâce à un fil social en temps réel des problèmes civiques et des mises à jour
               </p>
             </CardContent>
           </Card>
@@ -130,9 +129,9 @@ export default function LandingPage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <MapPin className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold">Smart Reporting</h3>
+              <h3 className="mb-2 text-xl font-semibold">Signalement intelligent</h3>
               <p className="text-muted-foreground">
-                Report issues with photos, GPS location, and category tagging for faster resolution
+                Signalez des problèmes avec des photos, une localisation GPS et un étiquetage par catégorie pour une résolution plus rapide
               </p>
             </CardContent>
           </Card>
@@ -142,9 +141,9 @@ export default function LandingPage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Users className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold">Community Voting</h3>
+              <h3 className="mb-2 text-xl font-semibold">Vote communautaire</h3>
               <p className="text-muted-foreground">
-                Support issues that matter to you and help prioritize what gets addressed first
+                Soutenez les problèmes qui vous importent et aidez à prioriser ce qui est traité en premier
               </p>
             </CardContent>
           </Card>
@@ -154,9 +153,9 @@ export default function LandingPage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Shield className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold">Official Responses</h3>
+              <h3 className="mb-2 text-xl font-semibold">Réponses officielles</h3>
               <p className="text-muted-foreground">
-                Get direct updates from municipal agents working to resolve reported issues
+                Obtenez des mises à jour directes des agents municipaux travaillant à résoudre les problèmes signalés
               </p>
             </CardContent>
           </Card>
@@ -166,9 +165,9 @@ export default function LandingPage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <TrendingUp className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold">Track Progress</h3>
+              <h3 className="mb-2 text-xl font-semibold">Suivre les progrès</h3>
               <p className="text-muted-foreground">
-                Monitor issue status from pending to in-progress to resolved with real-time updates
+                Surveillez le statut des problèmes de en attente à en cours à résolu avec des mises à jour en temps réel
               </p>
             </CardContent>
           </Card>
@@ -178,9 +177,9 @@ export default function LandingPage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <BarChart3 className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold">Impact Analytics</h3>
+              <h3 className="mb-2 text-xl font-semibold">Analyse d'impact</h3>
               <p className="text-muted-foreground">
-                View detailed analytics on community engagement and municipal response times
+                Consultez des analyses détaillées sur l'engagement communautaire et les temps de réponse municipaux
               </p>
             </CardContent>
           </Card>
@@ -191,14 +190,14 @@ export default function LandingPage() {
       <section className="bg-primary py-20 text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
           <h2 className="mb-4 text-3xl font-bold tracking-tight text-balance md:text-4xl">
-            Ready to Make a Difference?
+            Prêt à faire une différence ?
           </h2>
           <p className="mx-auto mb-8 max-w-2xl text-lg text-primary-foreground/90 text-pretty">
-            Join thousands of engaged citizens making their communities better, one report at a time
+            Rejoignez des milliers de citoyens engagés qui améliorent leurs communautés, un rapport à la fois
           </p>
           <Link href="/register">
             <Button size="lg" variant="secondary" className="bg-background text-foreground hover:bg-background/90">
-              Create Your Account
+              Créer votre compte
             </Button>
           </Link>
         </div>
@@ -215,41 +214,41 @@ export default function LandingPage() {
                 </div>
                 <span className="font-bold">CIVIX</span>
               </div>
-              <p className="text-sm text-muted-foreground">Empowering communities through civic engagement</p>
+              <p className="text-sm text-muted-foreground">Autonomiser les communautés grâce à l'engagement civique</p>
             </div>
 
             <div>
-              <h4 className="mb-4 font-semibold">Platform</h4>
+              <h4 className="mb-4 font-semibold">Plateforme</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link href="/feed" className="hover:text-foreground transition-colors">
-                    Feed
+                    Fil
                   </Link>
                 </li>
                 <li>
                   <Link href="/map" className="hover:text-foreground transition-colors">
-                    Map
+                    Carte
                   </Link>
                 </li>
                 <li>
                   <Link href="/about" className="hover:text-foreground transition-colors">
-                    About
+                    À propos
                   </Link>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="mb-4 font-semibold">Resources</h4>
+              <h4 className="mb-4 font-semibold">Ressources</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link href="/help" className="hover:text-foreground transition-colors">
-                    Help Center
+                    Centre d'aide
                   </Link>
                 </li>
                 <li>
                   <Link href="/guidelines" className="hover:text-foreground transition-colors">
-                    Guidelines
+                    Directives
                   </Link>
                 </li>
                 <li>
@@ -261,16 +260,16 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h4 className="mb-4 font-semibold">Legal</h4>
+              <h4 className="mb-4 font-semibold">Légal</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link href="/privacy" className="hover:text-foreground transition-colors">
-                    Privacy
+                    Confidentialité
                   </Link>
                 </li>
                 <li>
                   <Link href="/terms" className="hover:text-foreground transition-colors">
-                    Terms
+                    Conditions
                   </Link>
                 </li>
                 <li>

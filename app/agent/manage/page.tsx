@@ -19,13 +19,13 @@ import {
   User,
   Plus,
 } from 'lucide-react'
-import useUsers from '@/hooks/useUser'
+import { useUsers } from '@/hooks/useUsers'
 import { AddAgentDialog } from '@/components/add-agent-dialog'
 
 export default function ManageAgentsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isAddAgentOpen, setIsAddAgentOpen] = useState(false)
-  const { data: users = [], isLoading, error, deleteUser } = useUsers()
+  const { users, loading, error } = useUsers()
 
   // Filter only agents
   const agents = Array.isArray(users) ? users.filter((user) => user.role === 'agent') : []
@@ -36,7 +36,8 @@ export default function ManageAgentsPage() {
 
   const handleDeleteAgent = (id: number) => {
     if (window.confirm('Are you sure you want to delete this agent?')) {
-      deleteUser(id)
+      // TODO: Implement delete functionality
+      console.log('Delete agent:', id)
     }
   }
 
@@ -75,7 +76,7 @@ export default function ManageAgentsPage() {
         </div>
 
         <div>
-            <h1>Nombre des agents: {users?.filter((user) => user.role === 'agent').length}</h1>
+            <h1>Nombre des agents: {users?.filter((user: any) => user.role === 'agent').length}</h1>
         </div>
 
         {/* Error State */}
@@ -86,7 +87,7 @@ export default function ManageAgentsPage() {
               <div className="flex-1">
                 <p className="font-semibold text-destructive">Error loading agents</p>
                 <p className="text-sm text-destructive/80">
-                  {error instanceof Error ? error.message : 'Failed to fetch agents from server'}
+                  {typeof error === 'string' ? error : 'Failed to fetch agents from server'}
                 </p>
               </div>
             </CardContent>
@@ -94,7 +95,7 @@ export default function ManageAgentsPage() {
         )}
 
         {/* Loading State */}
-        {isLoading ? (
+        {loading ? (
           <div className="grid gap-4">
             {[...Array(3)].map((_, i) => (
               <Card key={i} className="animate-pulse">
@@ -136,7 +137,7 @@ export default function ManageAgentsPage() {
                         <AvatarFallback className="bg-primary/10 text-lg font-bold">
                           {agent.nom
                             .split(' ')
-                            .map((n) => n[0])
+                            .map((n: any) => n[0])
                             .join('')}
                         </AvatarFallback>
                       </Avatar>
