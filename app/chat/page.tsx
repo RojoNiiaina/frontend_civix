@@ -8,7 +8,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import NavBar from "@/components/NavBar"
-import { useConversations, useMessages } from "@/hooks/useChat"
+import { useConversations } from "@/hooks/useChat"
+import useMessages from "@/hooks/useMessages"
 import useAuth from "@/hooks/useAuth"
 import { Message, Conversation } from "@/lib/utils"
 import { NewConversationDialog } from "@/components/new-conversation-dialog"
@@ -37,10 +38,19 @@ export default function ChatPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  const messagesHook = useMessages()
+  const allMessages = messagesHook.messages || []
+  const messagesLoading = messagesHook.isLoading
+  const messagesError = messagesHook.error
+
+  useEffect(() => {
+    allMessages
+  })
+
+
   console.log('ChatPage - selectedConversation:', selectedConversation)
 
   const { conversations, loading: conversationsLoading, error: conversationsError } = useConversations()
-  const { messages, loading: messagesLoading, sendMessage, sendMessageWithImage, isSending: hookSending, refetch } = useMessages(selectedConversation?.id)
   const { user } = useAuth()
 
   const filteredConversations = conversations.filter(conv =>
@@ -50,18 +60,28 @@ export default function ChatPage() {
     self.findIndex(c => c.id === conv.id) === index
   )
 
+  const filteredMessages = selectedConversation?.id === 0 
+    ? allMessages.filter(msg => msg.recipient === null)
+    : selectedConversation 
+      ? allMessages.filter(msg => 
+          msg.recipient !== null && (
+            msg.recipient?.id === selectedConversation.id || msg.sender?.id === selectedConversation.id
+          )
+        )
+      : []
+
   const handleSendMessage = async () => {
-    if (messageInput.trim() && selectedConversation && !isSending && !hookSending) {
+    if (messageInput.trim() && selectedConversation && !isSending && !messagesHook.isSending) {
       setIsSending(true)
       try {
         // Si c'est le groupe (id: 0), envoyer sans recipient
         const recipientId = selectedConversation.id === 0 ? null : selectedConversation.id
-        const success = await sendMessage(messageInput, recipientId)
+        const success = await messagesHook.sendMessage({ content: messageInput, recipient: recipientId })
         if (success) {
           setMessageInput("")
           scrollToBottom()
           // Rafraîchir les messages après envoi
-          refetch()
+          messagesHook.refetchMessages()
         }
       } finally {
         setIsSending(false)
@@ -71,7 +91,7 @@ export default function ChatPage() {
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (file && selectedConversation && !isSending && !hookSending) {
+    if (file && selectedConversation && !isSending && !messagesHook.isSending) {
       setIsSending(true)
       try {
         // Si l'utilisateur a tapé du texte, on n'envoie pas l'image
@@ -83,12 +103,12 @@ export default function ChatPage() {
         // Envoyer seulement l'image avec un contenu par défaut
         const messageText = '📷'
         const recipientId = selectedConversation.id === 0 ? null : selectedConversation.id
-        const success = await sendMessageWithImage(messageText, file, recipientId)
+        const success = await messagesHook.sendMessageWithImage({ content: messageText, recipient: recipientId, image: file })
         if (success) {
           setMessageInput("")
           scrollToBottom()
           // Rafraîchir les messages après envoi d'image
-          refetch()
+          messagesHook.refetchMessages()
         }
       } catch (error) {
         console.error('Error sending image:', error)
@@ -109,7 +129,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [filteredMessages])
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString)
@@ -298,7 +318,7 @@ export default function ChatPage() {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                { messages.length === 0 ? (
+                { filteredMessages.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
                       <div className="text-4xl mb-2">💬</div>
@@ -307,7 +327,7 @@ export default function ChatPage() {
                     </div>
                   </div>
                 ) : (
-                  messages.map((message) => (
+                  filteredMessages.map((message) => (
                     <div key={message.id} className={`flex ${isMessageFromMe(message) ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-xs lg:max-w-md ${isMessageFromMe(message) ? "order-2" : "order-1"}`}>
                         {/* Afficher le nom de l'expéditeur pour les messages de groupe */}
@@ -364,7 +384,7 @@ export default function ChatPage() {
                     variant="ghost" 
                     size="icon" 
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={isSending || hookSending}
+                    disabled={isSending || messagesHook.isSending}
                   >
                     <Image className="h-5 w-5" />
                   </Button>
@@ -375,21 +395,21 @@ export default function ChatPage() {
                       onChange={(e) => setMessageInput(e.target.value)}
                       onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
                       className="pr-10"
-                      disabled={isSending || hookSending}
+                      disabled={isSending || messagesHook.isSending}
                     />
                     <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2">
                       <Smile className="h-4 w-4" />
                     </Button>
                   </div>
-                  <Button variant="ghost" size="icon" disabled={isSending || hookSending}>
+                  <Button variant="ghost" size="icon" disabled={isSending || messagesHook.isSending}>
                     <Mic className="h-5 w-5" />
                   </Button>
                   <Button 
                     onClick={handleSendMessage} 
                     size="icon" 
-                    disabled={!messageInput.trim() || isSending || hookSending}
+                    disabled={!messageInput.trim() || isSending || messagesHook.isSending}
                   >
-                    {(isSending || hookSending) ? (
+                    {(isSending || messagesHook.isSending) ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       <Send className="h-5 w-5" />

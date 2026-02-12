@@ -37,7 +37,7 @@ export function ReportCard({
   const { toggleLike, isToggling } = useLikes()
   const { data: comments, addComment, isAdding } = useComments(id)
   const [isShareOpen, setIsShareOpen] = useState(false)
-  const {CreateNotification} = useNotifications()
+
 
 
   const {approuveReport} = useReports()

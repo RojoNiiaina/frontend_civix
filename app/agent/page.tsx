@@ -97,7 +97,7 @@ export default function AgentDashboard() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <Tabs defaultValue="all" className="w-full">
+          <Tabs defaultValue="approuve" className="w-full" >
             <div className="sticky top-14 z-40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 px-4 py-3 border-b border-border/40">
               <TabsList className="grid w-full grid-cols-2 bg-muted/50">
                 <TabsTrigger
