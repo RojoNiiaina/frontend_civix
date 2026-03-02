@@ -56,7 +56,7 @@ export default function ManageCitizensPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-semibold truncate">{citizen.nom}</h3>
                   <Badge variant="outline" className="text-xs">
-                    {isActive ? 'Active' : 'Inactive'}
+                    {isActive ? 'Actif' : 'Inactif'}
                   </Badge>
                 </div>
                 <div className="space-y-1 text-sm text-muted-foreground">
@@ -78,14 +78,14 @@ export default function ManageCitizensPage() {
                 </div>
                 {citizen.date_inscription && (
                   <p className="text-xs text-muted-foreground mt-2">
-                    Joined {new Date(citizen.date_inscription).toLocaleDateString()}
+                    Inscrit le {new Date(citizen.date_inscription).toLocaleDateString()}
                   </p>
                 )}
               </div>
             </div>
             <div className="flex flex-col gap-2 flex-shrink-0">
               <Button size="sm" variant="outline">
-                View Profile
+                Voir le profil
               </Button>
               <Button
                 size="sm"
@@ -94,7 +94,7 @@ export default function ManageCitizensPage() {
                   handleAction(isActive ? 'deactivate' : 'activate', citizen.id)
                 }
               >
-                {isActive ? 'Deactivate' : 'Activate'}
+                {isActive ? 'Désactiver' : 'Activer'}
               </Button>
             </div>
           </div>
@@ -114,8 +114,8 @@ export default function ManageCitizensPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">Manage Citizens</h1>
-            <p className="text-sm text-muted-foreground">View and manage citizen accounts</p>
+            <h1 className="text-2xl font-bold">Gérer les citoyens</h1>
+            <p className="text-sm text-muted-foreground">Voir et gérer les comptes citoyens</p>
           </div>
         </div>
       </header>
@@ -125,14 +125,14 @@ export default function ManageCitizensPage() {
         {isLoading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2 text-muted-foreground">Loading citizens...</span>
+            <span className="ml-2 text-muted-foreground">Chargement des citoyens...</span>
           </div>
         )}
 
         {error && (
           <Card className="mb-6 border-red-200 bg-red-50">
             <CardContent className="pt-6">
-              <p className="text-red-700">Error loading citizens: {error?.message}</p>
+              <p className="text-red-700">Erreur lors du chargement des citoyens : {error?.message}</p>
             </CardContent>
           </Card>
         )}
@@ -146,7 +146,7 @@ export default function ManageCitizensPage() {
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="Search by name or email..."
+                    placeholder="Rechercher par nom ou email..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -159,7 +159,7 @@ export default function ManageCitizensPage() {
             <div className="mb-6 grid gap-4 md:grid-cols-3">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Citizens</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Total des citoyens</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{citizens.length}</div>
@@ -167,7 +167,7 @@ export default function ManageCitizensPage() {
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Active</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Actifs</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-green-600">{activeCitizens.length}</div>
@@ -175,7 +175,7 @@ export default function ManageCitizensPage() {
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Inactive</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Inactifs</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-red-600">{inactiveCitizens.length}</div>
@@ -186,20 +186,20 @@ export default function ManageCitizensPage() {
             {/* Citizens List with Tabs */}
             <Card>
               <CardHeader>
-                <CardTitle>Citizens</CardTitle>
-                <CardDescription>Manage and monitor all registered citizens</CardDescription>
+                <CardTitle>Citoyens</CardTitle>
+                <CardDescription>Gérer et surveiller tous les citoyens inscrits</CardDescription>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="all" className="w-full">
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="all">
-                      All ({filteredCitizens.length})
+                      Tous ({filteredCitizens.length})
                     </TabsTrigger>
                     <TabsTrigger value="active">
-                      Active ({activeCitizens.length})
+                      Actifs ({activeCitizens.length})
                     </TabsTrigger>
                     <TabsTrigger value="inactive">
-                      Inactive ({inactiveCitizens.length})
+                      Inactifs ({inactiveCitizens.length})
                     </TabsTrigger>
                   </TabsList>
 
@@ -207,8 +207,8 @@ export default function ManageCitizensPage() {
                     {filteredCitizens.length === 0 ? (
                       <div className="rounded-lg border border-dashed border-border p-12 text-center">
                         <Users className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
-                        <h3 className="font-semibold">No citizens found</h3>
-                        <p className="text-sm text-muted-foreground">Try adjusting your search</p>
+                        <h3 className="font-semibold">Aucun citoyen trouvé</h3>
+                        <p className="text-sm text-muted-foreground">Essayez d'ajuster votre recherche</p>
                       </div>
                     ) : (
                       filteredCitizens.map((citizen) => (
@@ -221,8 +221,8 @@ export default function ManageCitizensPage() {
                     {activeCitizens.length === 0 ? (
                       <div className="rounded-lg border border-dashed border-border p-12 text-center">
                         <Users className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
-                        <h3 className="font-semibold">No active citizens</h3>
-                        <p className="text-sm text-muted-foreground">All citizens are currently inactive</p>
+                        <h3 className="font-semibold">Aucun citoyen actif</h3>
+                        <p className="text-sm text-muted-foreground">Tous les citoyens sont actuellement inactifs</p>
                       </div>
                     ) : (
                       activeCitizens.map((citizen) => (
@@ -235,8 +235,8 @@ export default function ManageCitizensPage() {
                     {inactiveCitizens.length === 0 ? (
                       <div className="rounded-lg border border-dashed border-border p-12 text-center">
                         <Users className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
-                        <h3 className="font-semibold">No inactive citizens</h3>
-                        <p className="text-sm text-muted-foreground">All citizens are currently active</p>
+                        <h3 className="font-semibold">Aucun citoyen inactif</h3>
+                        <p className="text-sm text-muted-foreground">Tous les citoyens sont actuellement actifs</p>
                       </div>
                     ) : (
                       inactiveCitizens.map((citizen) => (

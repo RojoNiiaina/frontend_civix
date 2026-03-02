@@ -18,6 +18,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import useAuth from "@/hooks/useAuth"
 import useReports from "@/hooks/useReports"
 import { ShareDialog } from "./share-dialog"
+import { ReportDetailDialog } from "./report-detail-dialog"
 import { title } from "process"
 import Link from "next/link"
 import useNotifications from "@/hooks/useNotifications"
@@ -27,6 +28,11 @@ export function ReportCard({
   user : User,
   description,
   image,
+  image1,
+  image2,
+  image_url,
+  image1_url,
+  image2_url,
   lieu,
   like_count,
   is_liked,
@@ -34,9 +40,10 @@ export function ReportCard({
 }: Report) {
   const [showComments, setShowComments] = useState(false)
   const [commentText, setCommentText] = useState("")
+  const [isShareOpen, setIsShareOpen] = useState(false)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
   const { toggleLike, isToggling } = useLikes()
   const { data: comments, addComment, isAdding } = useComments(id)
-  const [isShareOpen, setIsShareOpen] = useState(false)
 
 
 
@@ -72,18 +79,18 @@ export function ReportCard({
 
 
   // Construire l'URL complète de l'image
-  const getImageUrl = () => {
-    if (!image) return null
+  const getImageUrl = (imageField: string | null | undefined) => {
+    if (!imageField) return null
     // Si l'image commence par http, c'est déjà une URL complète (retournée par le serializer)
-    if (image.startsWith('http://') || image.startsWith('https://')) {
-      return image
+    if (imageField.startsWith('http://') || imageField.startsWith('https://')) {
+      return imageField
     }
     // Si l'image commence par /media/, c'est une URL relative du backend Django
-    if (image.startsWith('/media/')) {
-      return `http://localhost:8000${image}`
+    if (imageField.startsWith('/media/')) {
+      return `http://localhost:8000${imageField}`
     }
     // Sinon, essayer de construire l'URL complète
-    return `http://localhost:8000/media/${image}`
+    return `http://localhost:8000/media/${imageField}`
   }
 
   const getProfileImageUrl = () => {
@@ -102,22 +109,31 @@ export function ReportCard({
 
   const profileImageUrl = getProfileImageUrl() 
 
-  const imageUrl = getImageUrl()
+  const imageUrl = image_url || getImageUrl(image)
+  const image1Url = image1_url || getImageUrl(image1)
+  const image2Url = image2_url || getImageUrl(image2)
+  
+  // Collecter toutes les images disponibles
+  const allImages = [imageUrl, image1Url, image2Url].filter(url => url !== null)
   
   // URL statique de test - À remplacer par imageUrl après test
   // Exemples d'images disponibles : account.jpg (racine) ou reports/agrinova.PNG (ancien chemin)
   const testImageUrl = "http://localhost:8000/media/account.jpg" // URL statique de test - maintenant directement dans reports/
   
-  // Utiliser l'URL de test pour déboguer, ou l'URL réelle si disponible
-  const displayImageUrl = imageUrl || testImageUrl
+  // Utiliser l'URL de test pour déboguer, ou les URLs réelles si disponibles
+  const displayImages = allImages.length > 0 ? allImages : [testImageUrl]
   
-  console.log("Image URL:", imageUrl, "Display URL:", displayImageUrl)
+  console.log("Images URLs:", { imageUrl, image1Url, image2Url, allImages, displayImages })
 
   return (
-    !image ?(
-      <Card className="w-full overflow-hidden bg-card border-0 shadow-md hover:shadow-lg transition-shadow duration-300 -gap-6">
+    <>
+      {allImages.length === 0 ? (
+        <Card 
+          className="w-full overflow-hidden bg-card border-0 shadow-md hover:shadow-lg transition-shadow duration-300 -gap-6 cursor-pointer"
+          onClick={() => setIsDetailOpen(true)}
+        >
         {/* Header Section - Author Info */}
-        <div className="p-4 flex items-start justify-between">
+        <div className="p-4 flex items-start justify-between" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-3 flex-1">
             <Avatar className="h-10 w-10">
               <AvatarImage 
@@ -130,14 +146,14 @@ export function ReportCard({
             
             <div className="flex-1">
               <p className="font-semibold flex items-center gap-2 text-sm leading-tight">
-                <Link href={`profile/${User.id}`} className="hover:border-b hover:border-gray-800 pb-0">
+                <Link href={user?.id === User.id ? "profile" : `profile/${User.id}`} className="hover:border-b hover:border-gray-800 pb-0">
                   {User.nom} 
                 </Link>
-                {User.role === "agent" && 
+                {User.role === "agent" && (
                   <span className="text-xs">
                     <BadgeCheck className="h-4 w-4 text-green-500" />
                   </span>
-                }
+                )}
               </p>
               <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString()}</p>
             </div>
@@ -195,7 +211,7 @@ export function ReportCard({
 
       
         {/* Actions Section - Facebook Style */}
-        <div className="px-4 py-2 border-t border-border">
+        <div className="px-4 py-2 border-t border-border" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1">
             <Button 
               variant="ghost" 
@@ -299,9 +315,12 @@ export function ReportCard({
         />
       </Card>
     ) : 
-    <Card className="w-full overflow-hidden bg-card border-0 shadow-md hover:shadow-lg transition-shadow duration-300 -gap-6">
+        <Card 
+          className="w-full overflow-hidden bg-card border-0 shadow-md hover:shadow-lg transition-shadow duration-300 -gap-6 cursor-pointer"
+          onClick={() => setIsDetailOpen(true)}
+        >
       {/* Header Section - Author Info */}
-      <div className="p-4 flex items-start justify-between">
+      <div className="p-4 flex items-start justify-between" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 flex-1">
           <Avatar className="h-10 w-10">
             <AvatarImage 
@@ -313,7 +332,7 @@ export function ReportCard({
           </Avatar>
           <div className="flex-1">
            <p className="font-semibold flex items-center gap-2 text-sm leading-tight">
-                <Link href={`profile/${User.id}`} className="hover:border-b hover:border-gray-800 pb-0">
+                <Link href={user?.id === User.id ? "profile" : `profile/${User.id}`}  className="hover:border-b hover:border-gray-800 pb-0">
                   {User.nom} 
                 </Link>
                 {User.role === "agent" && 
@@ -375,25 +394,46 @@ export function ReportCard({
         <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">{description}</p>
       </div>
 
-      {/* Image Section - Horizontal */}
-      {displayImageUrl && (
+      {/* Image Gallery Section */}
+      {displayImages.length > 0 && (
         <div className="relative w-full bg-muted overflow-hidden">
-          <img 
-            src={displayImageUrl || "/placeholder.svg"} 
-            alt={description || "Image du rapport"} 
-            className="w-full h-auto object-cover transition-transform duration-300 hover:scale-105"
-            onError={(e) => {
-              console.error("Erreur de chargement d'image:", displayImageUrl, e);
-            }}
-            onLoad={() => {
-              console.log("Image chargée avec succès:", displayImageUrl);
-            }}
-          />
+          <div className="relative">
+            <img 
+              src={displayImages[0] || "/placeholder.svg"} 
+              alt={description || "Image du rapport"} 
+              className="w-full h-auto object-cover transition-transform duration-300 hover:scale-105 cursor-pointer"
+              onError={(e) => {
+                console.error("Erreur de chargement d'image:", displayImages[0], e);
+              }}
+              onLoad={() => {
+                console.log("Image chargée avec succès:", displayImages[0]);
+              }}
+              onClick={(e) => {
+                e.stopPropagation()
+                // Ouvrir le dialog de détails de la publication
+                setIsDetailOpen(true)
+              }}
+            />
+            
+            {/* Badge pour images supplémentaires */}
+            {displayImages.length > 1 && (
+              <div 
+                className="absolute top-3 right-3 bg-black/70 text-white px-2 py-1 rounded-full text-sm font-medium cursor-pointer hover:bg-black/80 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  // Ouvrir le dialog de détails de la publication
+                  setIsDetailOpen(true)
+                }}
+              >
+                +{displayImages.length - 1}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Actions Section - Facebook Style */}
-      <div className="px-4 py-2 border-t border-border">
+      <div className="px-4 py-2 border-t border-border" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-1">
           <Button 
             variant="ghost" 
@@ -495,6 +535,31 @@ export function ReportCard({
         title={title}
         description={description}
       />
-    </Card>
+        </Card>
+    }
+      
+      {/* Report Detail Dialog */}
+      <ReportDetailDialog
+        report={{
+          id,
+          user: User,
+          description,
+          lieu,
+          like_count,
+          is_liked,
+          statut,
+          created_at: new Date().toISOString(),
+          image,
+          image1,
+          image2,
+          image_url,
+          image1_url,
+          image2_url,
+          like: 0
+        }}
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+      />
+    </>
   )
 }

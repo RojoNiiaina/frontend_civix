@@ -28,6 +28,7 @@ import {
   Users,
   Image,
   AlertCircle,
+  ChevronLeft,
 } from "lucide-react"
 
 export default function ChatPage() {
@@ -47,8 +48,6 @@ export default function ChatPage() {
     allMessages
   })
 
-
-  console.log('ChatPage - selectedConversation:', selectedConversation)
 
   const { conversations, loading: conversationsLoading, error: conversationsError } = useConversations()
   const { user } = useAuth()
@@ -158,6 +157,16 @@ export default function ChatPage() {
       <div className="flex h-[calc(100vh-3.5rem)]">
         {/* Liste des conversations */}
         <div className="w-full md:w-1/3 border-r border-border bg-muted/30">
+        
+          <div className="px-4 py-2 border-b border-border">
+            <Button variant="ghost" onClick={() => window.history.back()}>
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Retour
+            </Button>
+          </div>
+
+          {/* ... */}
+          
           {/* Header de la liste */}
           <div className="p-4 border-b border-border">
             <div className="flex items-center gap-3">
@@ -222,7 +231,16 @@ export default function ChatPage() {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className="font-medium truncate">{conversation.user.nom}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium truncate">
+                            {conversation.user.nom}
+                          </p>
+                          {conversation.user.role === "agent" && (
+                            <Badge variant="secondary" className="text-xs">
+                              Agent
+                            </Badge>
+                          )}
+                        </div>
                         <span className="text-xs text-muted-foreground">
                           {conversation.lastMessage ? formatTime(conversation.lastMessage.created_at) : ""}
                         </span>
@@ -285,7 +303,14 @@ export default function ChatPage() {
                     )}
                   </div>
                   <div>
-                    <p className="font-medium">{selectedConversation.user.nom}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{selectedConversation.user.nom}</p>
+                      {selectedConversation.user.role === "agent" && (
+                        <Badge variant="secondary" className="text-xs">
+                          Agent
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {selectedConversation.id === 0 
                         ? "Discussion de groupe publique" 
@@ -334,6 +359,7 @@ export default function ChatPage() {
                         {selectedConversation?.id === 0 && !isMessageFromMe(message) && message.sender && (
                           <p className="text-xs text-muted-foreground mb-1 font-medium">
                             {message.sender.nom}
+                            {message.sender.role === "agent" && <Badge variant="secondary" className="text-xs ml-1">Agent</Badge>}
                           </p>
                         )}
                         <div

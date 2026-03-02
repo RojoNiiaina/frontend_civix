@@ -37,6 +37,11 @@ export interface Report {
   description: string;
   lieu: string;
   image?: string; // URL
+  image1?: string;
+  image2?: string;
+  image_url?: string; // Generated URL from backend
+  image1_url?: string; // Generated URL from backend
+  image2_url?: string; // Generated URL from backend
   like: number;
   statut: ReportStatus;
   like_count: number;

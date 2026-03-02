@@ -36,13 +36,15 @@ export default function FeedComponent() {
       <div className="container mx-auto px-0 py-0 md:px-4 md:py-4">
         <div className="mx-auto max-w-xl">
           <Tabs defaultValue="all" className="w-full">
-            <TabsContent value="all" className="mt-0 space-y-0">
-              {reports.filter(report => report.statut === 'approuve').map((report, index) => (
-                <div key={index} className="mb-4">
-                  <ReportCard {...report} />
-                </div>
-              ))}
-            </TabsContent>
+            <div className="h-[600px] overflow-y-auto">
+              <TabsContent value="all" className="mt-0 space-y-0">
+                {reports.filter(report => report.statut === 'approuve').map((report, index) => (
+                  <div key={index} className="mb-4">
+                    <ReportCard {...report} />
+                  </div>
+                ))}
+              </TabsContent>
+            </div>
           </Tabs>
         </div>
       </div>

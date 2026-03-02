@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MapPin } from "lucide-react"
 import useAuth from "@/hooks/useAuth"
+import Image from "next/image"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -28,11 +29,11 @@ export default function LoginPage() {
       // On attend que le hook useAuth mette à jour user
       setTimeout(() => {
         if (role === "agent") {
-          router.push("/agent")
+          router.replace("/agent")
         } else if (role === "admin") {
-          router.push("/admin")
+          router.replace("/admin")
         } else {
-          router.push("/feed")
+          router.replace("/feed")
         }
       }, 300)
       // Note : ce timeout est un contournement simple pour attendre le refresh du user dans le hook. Pour une vraie solution, il faudrait améliorer le hook pour retourner le user après login.
@@ -47,10 +48,10 @@ export default function LoginPage() {
       <header className="border-b border-border">
         <div className="container mx-auto flex h-16 items-center px-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <MapPin className="h-5 w-5" />
+            <div className="flex items-center gap-2">
+              <Image src="/logo/logo_civix.png" alt="logo_civix" className="rounded-xl" width={40} height={40}/>
+              <span className="text-xl font-bold">CIVIX</span>
             </div>
-            <span className="text-xl font-bold">CIVIX</span>
           </Link>
         </div>
       </header>
@@ -95,7 +96,7 @@ export default function LoginPage() {
               {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
 
               <Button className="w-full mt-2" size="lg" disabled={isLoggingIn}>
-                {isLoggingIn ? "Signing in..." : "Sign In"}
+                {isLoggingIn ? "Connexion..." : "Se connecter"}
               </Button>
             </form>
           </CardContent>
@@ -106,13 +107,13 @@ export default function LoginPage() {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or</span>
+                <span className="bg-card px-2 text-muted-foreground">Ou</span>
               </div>
             </div>
             <div className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
+              Vous n&apos;avez pas encore de compte?{" "}
               <Link href="/register" className="font-medium text-primary hover:underline">
-                Sign up
+                S'inscrire
               </Link>
             </div>
           </CardFooter>

@@ -129,6 +129,25 @@ export function useConversations() {
         const response = await chatAPI.getConversations()
         const privateConversations = response.data
         
+        // Récupérer les informations complètes des utilisateurs pour avoir leur rôle
+        const enrichedConversations = await Promise.all(
+          privateConversations.map(async (conv: any) => {
+            try {
+              const userResponse = await usersAPI.getById(conv.user.id)
+              return {
+                ...conv,
+                user: {
+                  ...conv.user,
+                  role: userResponse.data.role
+                }
+              }
+            } catch (error) {
+              console.error('Error fetching user details:', error)
+              return conv // En cas d'erreur, garder la conversation originale
+            }
+          })
+        )
+        
         // Ajouter la conversation de groupe Civix
         const groupConversation: Conversation = {
           id: 0,
@@ -145,8 +164,8 @@ export function useConversations() {
           isOnline: true,
         }
         
-        // Mettre le groupe en premier, puis les conversations privées
-        setConversations([groupConversation, ...privateConversations])
+        // Mettre le groupe en premier, puis les conversations privées enrichies
+        setConversations([groupConversation, ...enrichedConversations])
       } catch (err: any) {
         setError(err.response?.data?.message || "Failed to fetch conversations")
       } finally {
@@ -164,8 +183,27 @@ export function useConversations() {
     refetch: () => {
       // setLoading(true)
       chatAPI.getConversations()
-        .then(response => {
+        .then(async response => {
           const privateConversations = response.data
+          
+          // Récupérer les informations complètes des utilisateurs pour avoir leur rôle
+          const enrichedConversations = await Promise.all(
+            privateConversations.map(async (conv: any) => {
+              try {
+                const userResponse = await usersAPI.getById(conv.user.id)
+                return {
+                  ...conv,
+                  user: {
+                    ...conv.user,
+                    role: userResponse.data.role
+                  }
+                }
+              } catch (error) {
+                console.error('Error fetching user details:', error)
+                return conv // En cas d'erreur, garder la conversation originale
+              }
+            })
+          )
           
           // Ajouter la conversation de groupe Civix
           const groupConversation: Conversation = {
@@ -183,7 +221,8 @@ export function useConversations() {
             isOnline: true,
           }
           
-          setConversations([groupConversation, ...privateConversations])
+          // Mettre le groupe en premier, puis les conversations privées enrichies
+          setConversations([groupConversation, ...enrichedConversations])
         })
         .catch(err => setError(err.response?.data?.message || "Failed to fetch conversations"))
         .finally(() => setLoading(false))

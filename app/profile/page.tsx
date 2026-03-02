@@ -74,6 +74,13 @@ export default function ProfilePage() {
     error,
   } = reportsHook
 
+  // Trier les publications par date décroissante (plus récentes en premier)
+  const sortedReports = [...reports].sort((a, b) => {
+    const dateA = new Date(a.created_at || 0)
+    const dateB = new Date(b.created_at || 0)
+    return dateB.getTime() - dateA.getTime()
+  })
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -85,9 +92,7 @@ export default function ProfilePage() {
             </Button>
           </Link>
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <MapPin className="h-5 w-5" />
-            </div>
+            <Image src="/logo/logo_civix.png" alt="logo_civix" className="rounded-xl" width={40} height={40}/>
             <span className="text-xl font-bold">CIVIX</span>
           </div>
         </div>
@@ -142,54 +147,6 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Stats */}
-          {/* <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <FileText className="h-4 w-4" />
-                  Reports
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{reports.length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <Award className="h-4 w-4" />
-                  Resolved
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold"></div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <Heart className="h-4 w-4" />
-                  Support
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold"></div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <Award className="h-4 w-4" />
-                  Reputation
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold"></div>
-              </CardContent>
-            </Card>
-          </div> */}
-
           {/* Activity Tabs */}
           <Tabs defaultValue="reports">
             <TabsList className="grid w-full grid-cols-4">
@@ -198,6 +155,7 @@ export default function ProfilePage() {
               <TabsTrigger value="en_attente">En attente</TabsTrigger>
               <TabsTrigger value="rejete">Refusée</TabsTrigger>
             </TabsList>
+            <div className="h-[600px] overflow-y-auto">
             <TabsContent value="reports" className="mt-6 space-y-4">
               {isLoading ? (
                 <div className="flex items-center justify-center py-12">
@@ -207,7 +165,7 @@ export default function ProfilePage() {
                 <div className="rounded-lg border border-dashed border-border p-12 text-center">
                   <p className="text-red-500">Erreur lors du chargement de vos publications.</p>
                 </div>
-              ) : reports.length === 0 ? (
+              ) : sortedReports.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border p-12 text-center">
                   <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                   <h3 className="mb-2 font-semibold">Aucune publication</h3>
@@ -216,7 +174,7 @@ export default function ProfilePage() {
                   </p>
                 </div>
               ) : (
-                reports.map((report, index) => (
+                sortedReports.map((report, index) => (
                   <ReportCard key={report.id || index} {...report} />
                 ))
               )}
@@ -230,13 +188,13 @@ export default function ProfilePage() {
                 <div className="rounded-lg border border-dashed border-border p-12 text-center">
                   <p className="text-red-500">Erreur lors du chargement de vos publications.</p>
                 </div>
-              ) : reports.filter(report => report.statut === 'approuve').length === 0 ? (
+              ) : sortedReports.filter(report => report.statut === 'approuve').length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border p-12 text-center">
                   <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                   <h3 className="mb-2 font-semibold">Aucune publication approuvée</h3>
                 </div>
               ) : (
-                reports.filter(report => report.statut === 'approuve').map((report, index) => (
+                sortedReports.filter(report => report.statut === 'approuve').map((report, index) => (
                 <div key={index} className="mb-4">
                   <ReportCard {...report} />
                 </div>
@@ -252,13 +210,13 @@ export default function ProfilePage() {
                 <div className="rounded-lg border border-dashed border-border p-12 text-center">
                   <p className="text-red-500">Erreur lors du chargement de vos publications.</p>
                 </div>
-              ) : reports.filter(report => report.statut === 'en_attente').length === 0 ? (
+              ) : sortedReports.filter(report => report.statut === 'en_attente').length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border p-12 text-center">
                   <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                   <h3 className="mb-2 font-semibold">Aucune publication en attente de validation</h3>
                 </div>
               ) : (
-                reports.filter(report => report.statut === 'en_attente').map((report, index) => (
+                sortedReports.filter(report => report.statut === 'en_attente').map((report, index) => (
                 <div key={index} className="mb-4">
                   <ReportCard {...report} />
                 </div>
@@ -274,19 +232,20 @@ export default function ProfilePage() {
                 <div className="rounded-lg border border-dashed border-border p-12 text-center">
                   <p className="text-red-500">Erreur lors du chargement de vos publications.</p>
                 </div>
-              ) : reports.filter(report => report.statut === 'rejete').length === 0 ? (
+              ) : sortedReports.filter(report => report.statut === 'rejete').length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border p-12 text-center">
                   <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                   <h3 className="mb-2 font-semibold">Aucune publication réjetée</h3>
                 </div>
               ) : (
-                reports.filter(report => report.statut === 'rejete').map((report, index) => (
+                sortedReports.filter(report => report.statut === 'rejete').map((report, index) => (
                   <div key={index} className="mb-4">
                     <ReportCard {...report} />
                   </div>
               ))
               )}
             </TabsContent>
+            </div>
           </Tabs>
         </div>
       </div>

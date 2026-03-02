@@ -99,7 +99,7 @@ export default function AgentDashboard() {
         <div className="grid gap-6 lg:grid-cols-2">
           <Tabs defaultValue="approuve" className="w-full" >
             <div className="sticky top-14 z-40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 px-4 py-3 border-b border-border/40">
-              <TabsList className="grid w-full grid-cols-2 bg-muted/50">
+              <TabsList className="grid w-full grid-cols-3 bg-muted/50">
                 <TabsTrigger
                   value="approuve"
                   className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -112,31 +112,46 @@ export default function AgentDashboard() {
                 >
                   En attente
                 </TabsTrigger>
+                <TabsTrigger
+                  value="rejete"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  Rejetée
+                </TabsTrigger>
               </TabsList>
             </div>
 
-            <TabsContent value="approuve" className="mt-0 space-y-0">
-              {reports.filter(report => report.statut === 'approuve').map((report, index) => (
-                <div key={index} className="mb-4">
-                  <ReportCard {...report} />
-                </div>
-              ))}
-            </TabsContent>
-            <TabsContent value="en_attente" className="mt-0 space-y-0">
-              {reports.filter(report => report.statut === 'en_attente').map((report, index) => (
-                <div key={index} className="mb-4">
-                  <ReportCard {...report} />
-                </div>
-              ))}
-            </TabsContent>
+            <div className="h-[500px] overflow-y-auto">
+              <TabsContent value="approuve" className="mt-0 space-y-0">
+                {reports.filter(report => report.statut === 'approuve').map((report, index) => (
+                  <div key={index} className="mb-4">
+                    <ReportCard {...report} />
+                  </div>
+                ))}
+              </TabsContent>
+              <TabsContent value="en_attente" className="mt-0 space-y-0">
+                {reports.filter(report => report.statut === 'en_attente').map((report, index) => (
+                  <div key={index} className="mb-4">
+                    <ReportCard {...report} />
+                  </div>
+                ))}
+              </TabsContent>
+              <TabsContent value="rejete" className="mt-0 space-y-0">
+                {reports.filter(report => report.statut === 'rejete').map((report, index) => (
+                  <div key={index} className="mb-4">
+                    <ReportCard {...report} />
+                  </div>
+                ))}
+              </TabsContent>
+            </div>
           </Tabs>
 
           {/* Activity Sidebar */}
           <div>
             <Card>
               <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest system updates</CardDescription>
+                <CardTitle>Activité récente</CardTitle>
+                <CardDescription>Dernières mises à jour du système</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-3">
@@ -144,9 +159,9 @@ export default function AgentDashboard() {
                     <CheckCircle2 className="h-4 w-4" />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">Report Resolved</p>
-                    <p className="text-xs text-muted-foreground">Streetlight issue on Oak Ave</p>
-                    <p className="text-xs text-muted-foreground">5 mins ago</p>
+                    <p className="text-sm font-medium">Rapport résolu</p>
+                    <p className="text-xs text-muted-foreground">Problème de lanterneaux sur Oak Ave</p>
+                    <p className="text-xs text-muted-foreground">5 min</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
@@ -154,9 +169,9 @@ export default function AgentDashboard() {
                     <Clock className="h-4 w-4" />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">Status Updated</p>
-                    <p className="text-xs text-muted-foreground">Pothole repair in progress</p>
-                    <p className="text-xs text-muted-foreground">1 hour ago</p>
+                    <p className="text-sm font-medium">Mise à jour de statut</p>
+                    <p className="text-xs text-muted-foreground">Réparation de poubelle en cours</p>
+                    <p className="text-xs text-muted-foreground">1 heure</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
@@ -164,9 +179,9 @@ export default function AgentDashboard() {
                     <AlertCircle className="h-4 w-4" />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">New High Priority</p>
-                    <p className="text-xs text-muted-foreground">Illegal dumping reported</p>
-                    <p className="text-xs text-muted-foreground">2 hours ago</p>
+                    <p className="text-sm font-medium">Nouveau de haut niveau</p>
+                    <p className="text-xs text-muted-foreground">Déchet illégal signalé</p>
+                    <p className="text-xs text-muted-foreground">2 heures</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
@@ -174,9 +189,9 @@ export default function AgentDashboard() {
                     <Users className="h-4 w-4" />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">Community Support</p>
-                    <p className="text-xs text-muted-foreground">24 votes on trash bin issue</p>
-                    <p className="text-xs text-muted-foreground">3 hours ago</p>
+                    <p className="text-sm font-medium">Appui de la communauté</p>
+                    <p className="text-xs text-muted-foreground">24 votes sur le problème des poubelles</p>
+                    <p className="text-xs text-muted-foreground">3 heures</p>
                   </div>
                 </div>
               </CardContent>

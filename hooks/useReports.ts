@@ -37,6 +37,8 @@ export default function useReports() {
       description: string;
       lieu: string;
       image?: File;
+      image1?: File;
+      image2?: File;
     }) => {
       const formData = new FormData();
       Object.entries(newReport).forEach(([key, value]) => {

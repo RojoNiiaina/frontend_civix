@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MapPin } from "lucide-react"
 import { authAPI } from "@/lib/api"
+import Image from "next/image"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -59,10 +60,10 @@ export default function RegisterPage() {
       <header className="border-b border-border">
         <div className="container mx-auto flex h-16 items-center px-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <MapPin className="h-5 w-5" />
+            <div className="flex items-center gap-2">
+              <Image src="/logo/logo_civix.png" alt="logo_civix" className="rounded-xl" width={40} height={40}/>
+              <span className="text-xl font-bold">CIVIX</span>
             </div>
-            <span className="text-xl font-bold">CIVIX</span>
           </Link>
         </div>
       </header>
@@ -71,13 +72,13 @@ export default function RegisterPage() {
       <div className="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-            <CardDescription>Join your community and start making a difference</CardDescription>
+            <CardTitle className="text-2xl font-bold">Créer un compte</CardTitle>
+            <CardDescription>Rejoignez votre communauté et commencez à apporter votre contribution</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleRegister}>
               <div className="space-y-2">
-                <Label htmlFor="nom">Full Name</Label>
+                <Label htmlFor="nom">Nom et Prénom</Label>
                 <Input
                   id="nom"
                   name="nom"
@@ -101,7 +102,7 @@ export default function RegisterPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Mot de passe</Label>
                 <Input
                   id="password"
                   name="password"
@@ -113,7 +114,7 @@ export default function RegisterPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword">Confirmer votre mot de passe</Label>
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -128,7 +129,7 @@ export default function RegisterPage() {
               {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
 
               <Button className="w-full mt-2" size="lg" type="submit" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Create Account"}
+                {isLoading ? "Création de compte..." : "Créer un compte"}
               </Button>
             </form>
           </CardContent>
@@ -139,13 +140,13 @@ export default function RegisterPage() {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or</span>
+                <span className="bg-card px-2 text-muted-foreground">Ou</span>
               </div>
             </div>
             <div className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
+              Avez vous déja de compte?{" "}
               <Link href="/login" className="font-medium text-primary hover:underline">
-                Sign in
+                Se connecter
               </Link>
             </div>
           </CardFooter>

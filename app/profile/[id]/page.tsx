@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation"
 import useUser from "@/hooks/useUser"
 import React from "react"
 import useReports from "@/hooks/useReports"
+import Image from "next/image"
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -113,9 +114,7 @@ export default function ProfileUser({ params }: PageProps) {
             </Button>
           </Link>
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <MapPin className="h-5 w-5" />
-            </div>
+            <Image src="/logo/logo_civix.png" alt="logo_civix" className="rounded-xl" width={40} height={40}/>
             <span className="text-xl font-bold">CIVIX</span>
           </div>
         </div>
@@ -167,6 +166,7 @@ export default function ProfileUser({ params }: PageProps) {
             </TabsList>
 
             {/* All */}
+            <div className="h-[600px] overflow-y-auto">
             <TabsContent value="reports" className="mt-6 space-y-4">
               {isLoading ? (
                 <div className="flex justify-center py-12">
@@ -187,6 +187,7 @@ export default function ProfileUser({ params }: PageProps) {
                 ))
               )}
             </TabsContent>
+            </div>
 
            
           </Tabs>
