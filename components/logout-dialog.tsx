@@ -33,7 +33,7 @@ export function LogoutDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Se déconnecter</DialogTitle>
+          <DialogTitle className="cursor-pointer">Se déconnecter</DialogTitle>
           <DialogDescription>
             Êtes-vous sûr de vouloir vous déconnecter ?
           </DialogDescription>

@@ -20,34 +20,95 @@ export function useUsers() {
   const [error, setError] = useState<string | null>(null)
   const { token } = useAuth()
 
+  const handleStatusToggle = async (userId: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ statut: newStatus }),
+      })
+
+      if (response.ok) {
+        await refetch()
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Error updating user status:', error)
+      return false
+    }
+  }
+
+  const handleDeleteUser = async (userId: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        await refetch()
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      return false
+    }
+  }
+
+  const handlePromoteToAdmin = async (userId: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ role: 'admin' }),
+      })
+
+      if (response.ok) {
+        await refetch()
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Error promoting user to admin:', error)
+      return false
+    }
+  }
+
   useEffect(() => {
     if (!token) return
 
     const fetchUsers = async () => {
       try {
         setLoading(true)
+        
         const response = await fetch(`${API_BASE_URL}/users/`, {
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         })
-
+        
         if (!response.ok) {
-          throw new Error("Failed to fetch users")
+          throw new Error(`Failed to fetch users: ${response.status}`)
         }
 
         const data = await response.json()
         
-        // Filtrer pour exclure l'utilisateur actuel et ne montrer que les utilisateurs actifs
-        const currentUserId = parseInt(localStorage.getItem('userId') || '0')
-        const filteredUsers = data.filter((user: User) => 
-          user.id !== currentUserId && 
-          user.statut === 'actif' &&
-          user.role !== 'admin' // Optionnel: exclure les admins
-        )
-
-        setUsers(filteredUsers)
+        // Récupérer tous les utilisateurs sans filtre préalable
+        const usersArray = data.results || data
+        
+        setUsers(Array.isArray(usersArray) ? usersArray : [])
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error")
       } finally {
@@ -58,13 +119,43 @@ export function useUsers() {
     fetchUsers()
   }, [token])
 
+  const refetch = async () => {
+    if (!token) return
+
+    try {
+      setLoading(true)
+      
+      const response = await fetch(`${API_BASE_URL}/users/`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch users: ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      const usersArray = data.results || data
+      
+      setUsers(Array.isArray(usersArray) ? usersArray : [])
+      setError(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return {
     users,
     loading,
     error,
-    refetch: () => {
-      setLoading(true)
-      // Trigger refetch
-    }
+    refetch,
+    handleStatusToggle,
+    handleDeleteUser,
+    handlePromoteToAdmin
   }
 }

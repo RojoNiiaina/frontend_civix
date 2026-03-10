@@ -130,7 +130,7 @@ export default function ProfilePage() {
                 <div className="flex-1 text-center sm:text-left">
                   <h1 className="mb-1 text-2xl font-bold">{nom}</h1>
                   <p className="mb-3 text-muted-foreground">
-                    {formattedJoinDate ? `Joined ${formattedJoinDate}` : "Member"}
+                    {formattedJoinDate ? `membre depuis ${formattedJoinDate}` : "Member"}
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
                     <Badge variant="outline" className="gap-1 bg-blue-200">
@@ -142,7 +142,7 @@ export default function ProfilePage() {
                     </Badge>
                   </div>
                 </div>
-                <Button className="sm:mt-4 font-semibold" onClick={() => setIsEditDialogOpen(true)}>Edit Profile</Button>
+                <Button className="sm:mt-4 font-semibold" onClick={() => setIsEditDialogOpen(true)}>Modifier le profil</Button>
               </div>
             </CardContent>
           </Card>

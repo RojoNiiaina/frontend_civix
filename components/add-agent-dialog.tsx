@@ -1,9 +1,7 @@
 'use client'
 
-import React from "react"
-
-import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import React, { useState } from 'react'
+import { UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -23,40 +21,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import useAuth from '@/hooks/useAuth'
+
+const API_BASE_URL = "http://localhost:8000/api"
 
 interface AddAgentDialogProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
-  onSubmit?: (data: {
-    id: string,
-    nom: string,
-    email: string,
-    role: string,
-    statut: string,
-    date_inscription: string,
-    cin: string,
-    telephone: string,
-    photo: string,
-  }) => void ,
+  onAgentAdded?: () => void
 }
 
-export function AddAgentDialog({ open, onOpenChange, onSubmit }: AddAgentDialogProps) {
+export function AddAgentDialog({ open, onOpenChange, onAgentAdded }: AddAgentDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false)
   const isControlled = open !== undefined
   const isOpen = isControlled ? open : internalOpen
   const setIsOpen = isControlled ? (onOpenChange || (() => {})) : setInternalOpen
   const [formData, setFormData] = useState({
-    id: "",
     nom: "",
     email: "",
-    role: "agent",
-    statut: "",
-    date_inscription: "",
-    cin: "",
+    password: "",
     telephone: "",
-    photo: "",
+    role: "agent",
+    cin: ""
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const { token } = useAuth()
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -68,35 +58,49 @@ export function AddAgentDialog({ open, onOpenChange, onSubmit }: AddAgentDialogP
     }))
   }
 
-  const handleDepartmentChange = (value: string) => {
+  const handleRoleChange = (value: string) => {
     setFormData((prev) => ({
       ...prev,
-      department: value,
+      role: value,
     }))
   }
 
   const handleSubmit = async () => {
-    if (!formData.nom || !formData.email || !formData.role || !formData.statut) {
-      console.log('[v0] All fields are required')
+    if (!formData.nom || !formData.email || !formData.password) {
+      setError("Tous les champs obligatoires doivent être remplis")
       return
     }
 
     setIsLoading(true)
+    setError("")
+
     try {
-      onSubmit?.(formData)
+      const response = await fetch(`${API_BASE_URL}/users/`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Erreur lors de la création de l'agent")
+      }
+
       setFormData({
-        id: "",
         nom: "",
         email: "",
-        role: "agent",
-        statut: "",
-        date_inscription: "",
-        cin: "",
+        password: "",
         telephone: "",
-        photo: "",
+        role: "agent",
+        cin: ""
       })
       setIsOpen(false)
-      console.log('[v0] Agent added:', formData)
+      onAgentAdded?.()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur inconnue")
     } finally {
       setIsLoading(false)
     }
@@ -106,7 +110,7 @@ export function AddAgentDialog({ open, onOpenChange, onSubmit }: AddAgentDialogP
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button className="gap-2">
-          <Plus className="h-4 w-4" />
+          <UserPlus className="h-4 w-4" />
           Ajouter un agent
         </Button>
       </DialogTrigger>
@@ -114,43 +118,61 @@ export function AddAgentDialog({ open, onOpenChange, onSubmit }: AddAgentDialogP
         <DialogHeader>
           <DialogTitle>Ajouter un nouvel agent</DialogTitle>
           <DialogDescription>
-            Create a new municipal agent account
+            Créer un nouveau compte agent pour accéder à la plateforme.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5">
-          {/* Name Field */}
+          {error && (
+            <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="nom">Nom complet</Label>
             <Input
-              id="name"
-              placeholder="Enter agent name"
+              id="nom"
+              placeholder="Entrez le nom complet"
               value={formData.nom}
               onChange={(e) => handleInputChange(e, 'nom')}
               disabled={isLoading}
+              required
             />
           </div>
 
-          {/* Email Field */}
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">Adresse email</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter email address"
+              placeholder="Entrez l'adresse email"
               value={formData.email}
               onChange={(e) => handleInputChange(e, 'email')}
               disabled={isLoading}
+              required
             />
           </div>
 
-          {/* Phone Field */}
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
+            <Label htmlFor="password">Mot de passe</Label>
             <Input
-              id="phone"
+              id="password"
+              type="password"
+              placeholder="Entrez le mot de passe"
+              value={formData.password}
+              onChange={(e) => handleInputChange(e, 'password')}
+              disabled={isLoading}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="telephone">Téléphone</Label>
+            <Input
+              id="telephone"
               type="tel"
-              placeholder="Enter phone number"
+              placeholder="Entrez le numéro de téléphone"
               value={formData.telephone}
               onChange={(e) => handleInputChange(e, 'telephone')}
               disabled={isLoading}
@@ -161,15 +183,26 @@ export function AddAgentDialog({ open, onOpenChange, onSubmit }: AddAgentDialogP
             <Label htmlFor="cin">Numéro CIN</Label>
             <Input
               id="cin"
-              type="tel"
-              placeholder="CIN"
+              placeholder="Entrez le numéro CIN"
               value={formData.cin}
               onChange={(e) => handleInputChange(e, 'cin')}
               disabled={isLoading}
             />
           </div>
 
-          {/* Dialog Footer */}
+          <div className="space-y-2">
+            <Label htmlFor="role">Rôle</Label>
+            <Select value={formData.role} onValueChange={handleRoleChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner un rôle" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="agent">Agent</SelectItem>
+                <SelectItem value="admin">Administrateur</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <DialogFooter className="mt-6 gap-3 sm:gap-0">
             <Button
               type="button"
@@ -177,14 +210,14 @@ export function AddAgentDialog({ open, onOpenChange, onSubmit }: AddAgentDialogP
               onClick={() => setIsOpen(false)}
               disabled={isLoading}
             >
-              Cancel
+              Annuler
             </Button>
             <Button
               type="button"
               disabled={isLoading}
               onClick={handleSubmit}
             >
-              {isLoading ? 'Adding...' : 'Add Agent'}
+              {isLoading ? 'Création...' : 'Créer l\'agent'}
             </Button>
           </DialogFooter>
         </div>

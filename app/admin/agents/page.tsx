@@ -8,6 +8,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, UserPlus, MoreHorizontal, Users, UserCheck, Shield, Filter, Edit, Trash2, Eye, ToggleLeft, ToggleRight } from "lucide-react"
+import { useUsers } from "@/hooks/useUsers"
+import { useState } from "react"
+import { AddAgentDialog } from "@/components/add-agent-dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,21 +18,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useUsers } from "@/hooks/useUsers"
-import { useState } from "react"
 
-export default function UsersPage() {
+export default function AgentsPage() {
   const { users, loading, error, refetch, handleStatusToggle, handleDeleteUser, handlePromoteToAdmin } = useUsers()
   const [searchTerm, setSearchTerm] = useState("")
-  const [roleFilter, setRoleFilter] = useState("user")
   const [statusFilter, setStatusFilter] = useState("all")
+
+  const handleAgentAdded = () => {
+    refetch()
+  }
 
   const handleStatusToggleWithConfirm = async (userId: number, currentStatus: string) => {
     await handleStatusToggle(userId, currentStatus)
   }
 
   const handleDeleteUserWithConfirm = async (userId: number) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet agent ?')) {
       await handleDeleteUser(userId)
     }
   }
@@ -40,22 +44,23 @@ export default function UsersPage() {
     }
   }
 
-  // Filtrer les utilisateurs localement
+  // Filtrer les utilisateurs localement - n'afficher que les agents
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter
+    const isAgent = user.role === 'agent'
     const matchesStatus = statusFilter === 'all' || user.statut === statusFilter
     
-    return matchesSearch && matchesRole && matchesStatus
+    return isAgent && matchesSearch && matchesStatus
   })
 
-  // Statistiques
+  // Statistiques - uniquement pour les agents
+  const agentUsers = users.filter(u => u.role === 'agent')
   const stats = {
-    totalUsers: users.length,
-    activeUsers: users.filter(u => u.statut === 'active').length,
-    agents: users.filter(u => u.role === 'agent').length,
-    citizens: users.filter(u => u.role === 'user').length
+    totalAgents: agentUsers.length,
+    activeAgents: agentUsers.filter(u => u.statut === 'active').length,
+    inactiveAgents: agentUsers.filter(u => u.statut === 'inactive').length,
+    suspendedAgents: agentUsers.filter(u => u.statut === 'suspendu').length
   }
 
   const getRoleColor = (role: string) => {
@@ -124,13 +129,10 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Utilisateurs</h2>
-          <p className="text-muted-foreground">Gérer les utilisateurs et permissions de la plateforme</p>
+          <h2 className="text-2xl font-bold tracking-tight">Gestion des Agents</h2>
+          <p className="text-muted-foreground">Gérer les agents et permissions de la plateforme</p>
         </div>
-        <Button className="gap-2">
-          <UserPlus className="h-4 w-4" />
-          Ajouter Utilisateur
-        </Button>
+        <AddAgentDialog onAgentAdded={handleAgentAdded} />
       </div>
 
       {/* Statistiques */}
@@ -139,36 +141,36 @@ export default function UsersPage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">Total Utilisateurs</span>
+              <span className="text-sm font-medium text-muted-foreground">Total Agents</span>
             </div>
-            <div className="mt-2 text-2xl font-bold">{stats.totalUsers}</div>
+            <div className="mt-2 text-2xl font-bold">{stats.totalAgents}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
               <UserCheck className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">Utilisateurs Actifs</span>
+              <span className="text-sm font-medium text-muted-foreground">Agents Actifs</span>
             </div>
-            <div className="mt-2 text-2xl font-bold">{stats.activeUsers}</div>
+            <div className="mt-2 text-2xl font-bold">{stats.activeAgents}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2">
+              <ToggleLeft className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">Agents Inactifs</span>
+            </div>
+            <div className="mt-2 text-2xl font-bold">{stats.inactiveAgents}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">Agents</span>
+              <span className="text-sm font-medium text-muted-foreground">Agents Suspendus</span>
             </div>
-            <div className="mt-2 text-2xl font-bold">{stats.agents}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">Citoyens</span>
-            </div>
-            <div className="mt-2 text-2xl font-bold">{stats.citizens}</div>
+            <div className="mt-2 text-2xl font-bold">{stats.suspendedAgents}</div>
           </CardContent>
         </Card>
       </div>
@@ -176,13 +178,13 @@ export default function UsersPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Citoyens ({filteredUsers.length})</CardTitle>
+            <CardTitle>Agents ({filteredUsers.length})</CardTitle>
             <div className="flex items-center gap-2">
               <div className="relative w-64">
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input 
                   type="search" 
-                  placeholder="Rechercher des citoyens..." 
+                  placeholder="Rechercher des agents..." 
                   className="pl-8" 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -190,17 +192,6 @@ export default function UsersPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-muted-foreground" />
-                <Select value={roleFilter} onValueChange={setRoleFilter}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Rôle" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="agent">Agent</SelectItem>
-                    <SelectItem value="citizen">Citoyen</SelectItem>
-                  </SelectContent>
-                </Select>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-32">
                     <SelectValue placeholder="Statut" />
@@ -209,7 +200,7 @@ export default function UsersPage() {
                     <SelectItem value="all">Tous</SelectItem>
                     <SelectItem value="active">Actif</SelectItem>
                     <SelectItem value="inactive">Inactif</SelectItem>
-                    <SelectItem value="suspended">Suspendu</SelectItem>
+                    <SelectItem value="suspendu">Suspendu</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -232,9 +223,9 @@ export default function UsersPage() {
               {filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    {searchTerm || roleFilter !== 'all' || statusFilter !== 'all' 
-                      ? 'Aucun utilisateur trouvé pour les filtres appliqués' 
-                      : 'Aucun utilisateur disponible'}
+                    {searchTerm || statusFilter !== 'all' 
+                      ? 'Aucun agent trouvé pour les filtres appliqués' 
+                      : 'Aucun agent disponible'}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -291,7 +282,7 @@ export default function UsersPage() {
                             {user.statut === 'active' ? (
                               <>
                                 <ToggleLeft className="h-4 w-4 mr-2" />
-                                Suspendre
+                                Désactiver
                               </>
                             ) : (
                               <>

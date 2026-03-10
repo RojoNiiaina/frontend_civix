@@ -35,8 +35,8 @@ export default function ManageAgentsPage() {
   )
 
   const handleDeleteAgent = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this agent?')) {
-      // TODO: Implement delete functionality
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet agent ?')) {
+      // TODO: Implémenter la fonctionnalité de suppression
       console.log('Delete agent:', id)
     }
   }
@@ -53,9 +53,9 @@ export default function ManageAgentsPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold">Manage Agents</h1>
+              <h1 className="text-3xl font-bold">Gérer les agents</h1>
               <p className="text-sm text-muted-foreground">
-                Manage and oversee municipal agents ({filteredAgents.length})
+                Gérer et superviser les agents municipaux ({filteredAgents.length})
               </p>
             </div>
           </div>
@@ -75,19 +75,16 @@ export default function ManageAgentsPage() {
           </div>
         </div>
 
-        <div>
-            <h1>Nombre des agents: {users?.filter((user: any) => user.role === 'agent').length}</h1>
-        </div>
-
+        
         {/* Error State */}
         {error && (
           <Card className="mb-6 border-destructive bg-destructive/5">
             <CardContent className="flex items-center gap-3 pt-6">
               <AlertCircle className="h-5 w-5 text-destructive" />
               <div className="flex-1">
-                <p className="font-semibold text-destructive">Error loading agents</p>
+                <p className="font-semibold text-destructive">Erreur lors du chargement des agents</p>
                 <p className="text-sm text-destructive/80">
-                  {typeof error === 'string' ? error : 'Failed to fetch agents from server'}
+                  {typeof error === 'string' ? error : 'Échec de la récupération des agents depuis le serveur'}
                 </p>
               </div>
             </CardContent>
@@ -107,11 +104,11 @@ export default function ManageAgentsPage() {
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <User className="mb-3 h-12 w-12 text-muted-foreground/50" />
-              <p className="mb-2 text-lg font-semibold">No agents found</p>
+              <p className="mb-2 text-lg font-semibold">Aucun agent trouvé</p>
               <p className="mb-4 text-sm text-muted-foreground">
                 {searchQuery
-                  ? 'Try adjusting your search criteria'
-                  : 'Start by adding your first agent'}
+                  ? 'Essayez d\'ajuster vos critères de recherche'
+                  : 'Commencez par ajouter votre premier agent'}
               </p>
               {!searchQuery && (
                 <Button
@@ -120,7 +117,7 @@ export default function ManageAgentsPage() {
                   className="gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  Add First Agent
+                  Ajouter le premier agent
                 </Button>
               )}
             </CardContent>
@@ -160,7 +157,7 @@ export default function ManageAgentsPage() {
                         )}
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    {/* <div className="flex gap-2">
                       <Badge variant="outline" className="w-fit">
                         {agent.statut || 'Active'}
                       </Badge>
@@ -175,7 +172,7 @@ export default function ManageAgentsPage() {
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                    </div>
+                    </div> */}
                   </div>
                 </CardContent>
               </Card>

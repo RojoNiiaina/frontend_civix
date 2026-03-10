@@ -1,59 +1,73 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Users, FileText, CheckCircle2, Clock, TrendingUp } from "lucide-react"
+import { Users, FileText, CheckCircle2, Clock, TrendingUp, Loader2 } from "lucide-react"
+import useReports from "@/hooks/useReports"
+import useUsers from "@/hooks/useUser"
+import useAdminStats from "@/hooks/useAdminStats"
+import { useRouter } from "next/navigation"
+
 
 export default function AdminDashboard() {
-  const stats = [
-    { title: "Total Users", value: "25,432", change: "+12.5%", icon: Users, trend: "up" },
-    { title: "Total Reports", value: "12,584", change: "+8.2%", icon: FileText, trend: "up" },
-    { title: "Resolved", value: "8,254", change: "+15.3%", icon: CheckCircle2, trend: "up" },
-    { title: "Pending", value: "482", change: "-5.1%", icon: Clock, trend: "down" },
-  ]
+  const router = useRouter();
+  const { data: stats, isLoading: statsLoading, error: statsError } = useAdminStats();
+  const { data: reports, isLoading: reportsLoading } = useReports();
+  const { data: users, isLoading: usersLoading } = useUsers();
 
-  const recentReports = [
-    {
-      id: "RPT-001",
-      title: "Pothole on Main Street",
-      category: "Infrastructure",
-      status: "in-progress",
-      priority: "high",
-      votes: 24,
+  // Stats dynamiques calculées depuis les hooks
+  const dynamicStats = stats ? [
+    { 
+      title: "Total Utilisateurs", 
+      value: stats.totalUsers.toLocaleString(), 
+      change: `+${stats.userGrowth}%`, 
+      icon: Users, 
+      trend: "up" 
     },
-    {
-      id: "RPT-002",
-      title: "Overflowing trash bins",
-      category: "Sanitation",
-      status: "pending",
-      priority: "medium",
-      votes: 18,
+    { 
+      title: "Total Signalements", 
+      value: stats.totalReports.toLocaleString(), 
+      change: `+${stats.reportGrowth}%`, 
+      icon: FileText, 
+      trend: "up" 
     },
-    {
-      id: "RPT-003",
-      title: "Broken streetlight",
-      category: "Public Safety",
-      status: "resolved",
-      priority: "high",
-      votes: 32,
+    { 
+      title: "Résolus", 
+      value: stats.resolvedReports.toLocaleString(), 
+      change: `+${stats.resolvedGrowth}%`, 
+      icon: CheckCircle2, 
+      trend: "up" 
     },
-    {
-      id: "RPT-004",
-      title: "Illegal dumping",
-      category: "Environment",
-      status: "pending",
-      priority: "high",
-      votes: 15,
+    { 
+      title: "En Attente", 
+      value: stats.pendingReports.toLocaleString(), 
+      change: `${stats.pendingGrowth}%`, 
+      icon: Clock, 
+      trend: stats.pendingGrowth >= 0 ? "up" : "down" 
     },
-  ]
+  ] : [];
+
+  // Récents rapports (limités aux 5 premiers)
+  const recentReports = reports?.slice(0, 5).map(report => ({
+    id: `RPT-${String(report.id).padStart(3, '0')}`,
+    title: report.description.substring(0, 50) + (report.description.length > 50 ? '...' : ''),
+    category: "Signalement", // À adapter selon vos catégories
+    status: report.statut === "en_attente" ? "en-attente" : 
+            report.statut === "en_cours" ? "en-cours" : 
+            report.statut === "resolu" ? "résolu" : report.statut,
+    priority: "moyenne", // À adapter selon votre logique
+    votes: report.like_count,
+  })) || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "pending":
+      case "en-attente":
         return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400"
-      case "in-progress":
+      case "en-cours":
         return "bg-blue-500/10 text-blue-700 dark:text-blue-400"
-      case "resolved":
+      case "résolu":
         return "bg-green-500/10 text-green-700 dark:text-green-400"
       default:
         return "bg-muted text-muted-foreground"
@@ -62,11 +76,11 @@ export default function AdminDashboard() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high":
+      case "haute":
         return "bg-red-500/10 text-red-700 dark:text-red-400"
-      case "medium":
+      case "moyenne":
         return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400"
-      case "low":
+      case "basse":
         return "bg-green-500/10 text-green-700 dark:text-green-400"
       default:
         return "bg-muted text-muted-foreground"
@@ -75,9 +89,24 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Loading State */}
+      {(statsLoading || reportsLoading || usersLoading) && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-muted-foreground">Chargement des données...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {statsError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-700">Erreur lors du chargement des statistiques</p>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
+        {dynamicStats.map((stat, index) => (
           <Card key={index}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
@@ -88,7 +117,7 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <TrendingUp className={`h-3 w-3 ${stat.trend === "up" ? "text-green-600" : "text-red-600"}`} />
                 <span className={stat.trend === "up" ? "text-green-600" : "text-red-600"}>{stat.change}</span>
-                <span>from last month</span>
+                <span>du mois dernier</span>
               </div>
             </CardContent>
           </Card>
@@ -99,27 +128,27 @@ export default function AdminDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Engagement Overview</CardTitle>
+            <CardTitle>Aperçu de l'Engagement</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Reports Submitted</span>
-                <span className="text-sm font-semibold">12,584</span>
+                <span className="text-sm text-muted-foreground">Signalements Soumis</span>
+                <span className="text-sm font-semibold">{stats?.submittedReports.toLocaleString()}</span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
                 <div className="h-full w-[78%] bg-primary" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Community Votes</span>
-                <span className="text-sm font-semibold">45,231</span>
+                <span className="text-sm text-muted-foreground">Votes Communautaires</span>
+                <span className="text-sm font-semibold">{stats?.communityVotes.toLocaleString()}</span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
                 <div className="h-full w-[92%] bg-primary" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Comments Posted</span>
-                <span className="text-sm font-semibold">8,942</span>
+                <span className="text-sm text-muted-foreground">Commentaires Publiés</span>
+                <span className="text-sm font-semibold">{stats?.publishedComments.toLocaleString()}</span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
                 <div className="h-full w-[65%] bg-primary" />
@@ -130,27 +159,27 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Resolution Metrics</CardTitle>
+            <CardTitle>Métriques de Résolution</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Avg Resolution Time</span>
-                <span className="text-sm font-semibold">2.4 days</span>
+                <span className="text-sm text-muted-foreground">Temps Moyen de Résolution</span>
+                <span className="text-sm font-semibold">{stats?.avgResolutionTime} jours</span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
                 <div className="h-full w-[45%] bg-green-600" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Resolution Rate</span>
-                <span className="text-sm font-semibold">94%</span>
+                <span className="text-sm text-muted-foreground">Taux de Résolution</span>
+                <span className="text-sm font-semibold">{stats?.resolutionRate.toFixed(1)}%</span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
                 <div className="h-full w-[94%] bg-green-600" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Citizen Satisfaction</span>
-                <span className="text-sm font-semibold">4.8 / 5.0</span>
+                <span className="text-sm text-muted-foreground">Satisfaction Citoyenne</span>
+                <span className="text-sm font-semibold">{stats?.citizenSatisfaction} / 5.0</span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
                 <div className="h-full w-[96%] bg-green-600" />
@@ -164,9 +193,13 @@ export default function AdminDashboard() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Recent Reports</CardTitle>
-            <Button variant="outline" size="sm">
-              View All
+            <CardTitle>Signalements Récents</CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => router.push('/admin/reports')}
+            >
+              Voir Tout
             </Button>
           </div>
         </CardHeader>
@@ -175,42 +208,54 @@ export default function AdminDashboard() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Priority</TableHead>
+                <TableHead>Titre</TableHead>
+                <TableHead>Catégorie</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead>Priorité</TableHead>
                 <TableHead>Votes</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recentReports.map((report) => (
-                <TableRow key={report.id}>
-                  <TableCell className="font-mono text-xs">{report.id}</TableCell>
-                  <TableCell className="font-medium">{report.title}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="text-xs">
-                      {report.category}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={`text-xs ${getStatusColor(report.status)}`}>
-                      {report.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={`text-xs ${getPriorityColor(report.priority)}`}>
-                      {report.priority}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{report.votes}</TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="sm">
-                      View
-                    </Button>
+              {recentReports.length > 0 ? (
+                recentReports.map((report) => (
+                  <TableRow key={report.id}>
+                    <TableCell className="font-mono text-xs">{report.id}</TableCell>
+                    <TableCell className="font-medium">{report.title}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="text-xs">
+                        {report.category}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={`text-xs ${getStatusColor(report.status)}`}>
+                        {report.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={`text-xs ${getPriorityColor(report.priority)}`}>
+                        {report.priority}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{report.votes}</TableCell>
+                    <TableCell>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => router.push(`/admin/reports/${report.id}`)}
+                      >
+                        Voir
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    Aucun signalement récent
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>

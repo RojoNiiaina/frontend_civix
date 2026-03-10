@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -8,53 +7,17 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Search, Filter, Eye, CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react"
-import { reportsAPI, categoriesAPI } from "@/lib/api"
-import type { Report, Category } from "@/lib/utils"
+import useReports from "@/hooks/useReports"
 import { REPORT_STATUSES, PRIORITY_LEVELS } from "@/lib/constant"
 
 export default function ReportsPage() {
-  const [reports, setReports] = useState<Report[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [filters, setFilters] = useState({
-    search: "",
-    status: "",
-    priority: "",
-    category: ""
-  })
-
-  useEffect(() => {
-    fetchData()
-  }, [filters])
-
-  const fetchData = async () => {
-    try {
-      const [reportsResponse, categoriesResponse] = await Promise.all([
-        reportsAPI.getAll(filters),
-        categoriesAPI.getAll()
-      ])
-      
-      setReports(reportsResponse.data.results || reportsResponse.data)
-      setCategories(categoriesResponse.data.results || categoriesResponse.data)
-    } catch (error) {
-      console.error("Failed to fetch data:", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleStatusUpdate = async (reportId: number, action: 'resolve' | 'reject') => {
-    try {
-      if (action === 'resolve') {
-        await reportsAPI.resolve(reportId)
-      } else {
-        await reportsAPI.reject(reportId)
-      }
-      await fetchData()
-    } catch (error) {
-      console.error(`Failed to ${action} report:`, error)
-    }
-  }
+  const {
+    data: reports,
+    isLoading,
+    error,
+    deleteReport,
+    approuveReport
+  } = useReports()
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -65,21 +28,6 @@ export default function ReportsPage() {
       case "resolu":
         return "bg-green-500/10 text-green-700 dark:text-green-400"
       case "rejete":
-        return "bg-red-500/10 text-red-700 dark:text-red-400"
-      default:
-        return "bg-muted text-muted-foreground"
-    }
-  }
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "basse":
-        return "bg-green-500/10 text-green-700 dark:text-green-400"
-      case "moyenne":
-        return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400"
-      case "haute":
-        return "bg-orange-500/10 text-orange-700 dark:text-orange-400"
-      case "urgente":
         return "bg-red-500/10 text-red-700 dark:text-red-400"
       default:
         return "bg-muted text-muted-foreground"
@@ -101,94 +49,59 @@ export default function ReportsPage() {
     }
   }
 
+  const handleStatusUpdate = async (reportId: number, action: 'resolve' | 'reject') => {
+    try {
+      if (action === 'resolve') {
+        // Utiliser approuveReport pour résoudre
+        approuveReport({ id: reportId })
+      } else {
+        // Pour rejeter, on pourrait utiliser deleteReport ou une autre action
+        console.log('Reject functionality not implemented in current hook')
+      }
+    } catch (error) {
+      console.error(`Failed to ${action} report:`, error)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Reports</h2>
-          <p className="text-muted-foreground">Manage and review citizen reports</p>
+          <h2 className="text-2xl font-bold tracking-tight">Signalements</h2>
+          <p className="text-muted-foreground">Gérer et examiner les signalements citoyens</p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>All Reports</CardTitle>
-            <div className="flex items-center gap-4">
-              <div className="relative w-64">
-                <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search reports..."
-                  className="pl-8"
-                  value={filters.search}
-                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Select value={filters.status} onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All Statuses</SelectItem>
-                    <SelectItem value="en_attente">Pending</SelectItem>
-                    <SelectItem value="en_cours">In Progress</SelectItem>
-                    <SelectItem value="resolu">Resolved</SelectItem>
-                    <SelectItem value="rejete">Rejected</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={filters.priority} onValueChange={(value) => setFilters(prev => ({ ...prev, priority: value }))}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All Priorities</SelectItem>
-                    <SelectItem value="basse">Low</SelectItem>
-                    <SelectItem value="moyenne">Medium</SelectItem>
-                    <SelectItem value="haute">High</SelectItem>
-                    <SelectItem value="urgente">Urgent</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All Categories</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id.toString()}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+          <CardTitle>Tous les Signalements</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8">Loading reports...</div>
+          {error ? (
+            <div className="text-center py-8 text-red-600">
+              Erreur: {error?.message || 'Une erreur est survenue'}
+            </div>
+          ) : isLoading ? (
+            <div className="text-center py-8">Chargement des signalements...</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
                   <TableHead>Description</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Reporter</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Created</TableHead>
+                  <TableHead>Catégorie</TableHead>
+                  <TableHead>Signaleur</TableHead>
+                  <TableHead>Statut</TableHead>
+                  {/* <TableHead>Priorité</TableHead> */}
+                  <TableHead>Créé le</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {reports.length === 0 ? (
+                {!reports || reports.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      No reports found matching your criteria.
+                      Aucun signalement trouvé.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -200,21 +113,16 @@ export default function ReportsPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-xs">
-                          {report.category?.name || "Uncategorized"}
+                          Non Catégorisé
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {report.user?.nom || "Unknown"}
+                        {report.user?.nom || "Inconnu"}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={`text-xs gap-1 ${getStatusColor(report.statut)}`}>
                           {getStatusIcon(report.statut)}
                           {report.statut.replace('_', ' ')}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`text-xs ${getPriorityColor(report.priorite)}`}>
-                          {report.priorite}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
@@ -239,7 +147,7 @@ export default function ReportsPage() {
                                 variant="ghost"
                                 size="sm"
                                 className="text-red-600 hover:text-red-700"
-                                onClick={() => handleStatusUpdate(report.id, 'reject')}
+                                onClick={() => deleteReport(report.id)}
                               >
                                 <XCircle className="h-4 w-4" />
                               </Button>

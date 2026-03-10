@@ -92,8 +92,8 @@ export default function CategoriesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Categories</h2>
-          <p className="text-muted-foreground">Manage report categories</p>
+          <h2 className="text-2xl font-bold tracking-tight">Catégories</h2>
+          <p className="text-muted-foreground">Gérer les catégories de signalements</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open)
@@ -102,30 +102,30 @@ export default function CategoriesPage() {
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              Add Category
+              Ajouter Catégorie
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {editingCategory ? "Edit Category" : "Add New Category"}
+                {editingCategory ? "Modifier Catégorie" : "Ajouter Nouvelle Catégorie"}
               </DialogTitle>
               <DialogDescription>
                 {editingCategory 
-                  ? "Update the category information below."
-                  : "Create a new report category."
+                  ? "Mettez à jour les informations de la catégorie ci-dessous."
+                  : "Créez une nouvelle catégorie de signalement."
                 }
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">Nom</Label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Category name"
+                    placeholder="Nom de la catégorie"
                     required
                   />
                 </div>
@@ -135,14 +135,14 @@ export default function CategoriesPage() {
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Category description (optional)"
+                    placeholder="Description de la catégorie (optionnel)"
                     rows={3}
                   />
                 </div>
               </div>
               <DialogFooter className="mt-6">
                 <Button type="submit">
-                  {editingCategory ? "Update" : "Create"} Category
+                  {editingCategory ? "Mettre à Jour" : "Créer"} Catégorie
                 </Button>
               </DialogFooter>
             </form>
@@ -153,12 +153,12 @@ export default function CategoriesPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>All Categories</CardTitle>
+            <CardTitle>Toutes les Catégories</CardTitle>
             <div className="relative w-64">
               <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search categories..."
+                placeholder="Rechercher des catégories..."
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -168,15 +168,15 @@ export default function CategoriesPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8">Loading categories...</div>
+            <div className="text-center py-8">Chargement des catégories...</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
+                  <TableHead>Nom</TableHead>
                   <TableHead>Description</TableHead>
-                  <TableHead>Reports Count</TableHead>
-                  <TableHead>Created</TableHead>
+                  <TableHead>Nombre de Signalements</TableHead>
+                  <TableHead>Créé le</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -184,7 +184,7 @@ export default function CategoriesPage() {
                 {filteredCategories.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      {searchTerm ? "No categories found matching your search." : "No categories found."}
+                      {searchTerm ? "Aucune catégorie trouvée correspondant à votre recherche." : "Aucune catégorie trouvée."}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -197,7 +197,7 @@ export default function CategoriesPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground max-w-xs truncate">
-                        {category.description || "No description"}
+                        {category.description || "Aucune description"}
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">0</Badge>
