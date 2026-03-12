@@ -76,10 +76,11 @@ export function CreateReportDialog() {
       <DialogTrigger asChild>
         <Button
           size="lg"
-          className="fixed bottom-6 right-6 z-50 h-16 w-16 rounded-full p-0 shadow-2xl transition-all hover:scale-110 hover:shadow-xl md:h-auto md:w-auto md:rounded-xl md:px-8 md:py-4"
+          className="h-12 px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5 rounded-xl"
         >
-          <Plus className="h-7 w-7 md:mr-2" />
-          <span className="hidden md:inline md:text-base md:font-semibold">Nouveau rapport</span>
+          <Plus className="h-5 w-5 mr-2" />
+          <span className="hidden sm:inline">Nouveau rapport</span>
+          <span className="sm:hidden">+</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
@@ -92,7 +93,7 @@ export function CreateReportDialog() {
         <div className="space-y-5 py-6">
           <div className="space-y-2">
             <Label htmlFor="description" className="text-sm font-semibold">
-              Description
+              Description *
             </Label>
             <Textarea
               id="description"
@@ -168,7 +169,7 @@ export function CreateReportDialog() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="location" className="text-sm font-semibold">
-              Lieu
+              Lieu *
             </Label>
             <div className="flex items-center gap-3">
               <Input

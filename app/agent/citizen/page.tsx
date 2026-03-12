@@ -94,7 +94,7 @@ export default function ManageCitizensPage() {
                   handleAction(isActive ? 'deactivate' : 'activate', citizen.id)
                 }
               >
-                {isActive ? 'Désactiver' : 'Activer'}
+                {isActive ? 'Suspendre' : 'Activer'}
               </Button>
             </div>
           </div>

@@ -129,33 +129,47 @@ export function ReportCard({
     <>
       {allImages.length === 0 ? (
         <Card 
-          className="w-full overflow-hidden bg-card border-0 shadow-md hover:shadow-lg transition-shadow duration-300 -gap-6 cursor-pointer"
+          className="w-full overflow-hidden bg-card border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer group"
           onClick={() => setIsDetailOpen(true)}
         >
         {/* Header Section - Author Info */}
-        <div className="p-4 flex items-start justify-between" onClick={(e) => e.stopPropagation()}>
+        <div className="p-4 flex items-start justify-between bg-linear-to-r from-background/50 to-background" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-3 flex-1">
-            <Avatar className="h-10 w-10">
-              <AvatarImage 
-                src={User.photo ? 
-                (User.photo.startsWith('http') ? User.photo : `http://localhost:8000${User.photo}`) 
-                : `http://localhost:8000/media/users/photos/user.png`} 
-                alt={User.nom} 
-              />
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+                <AvatarImage 
+                  src={User.photo ? 
+                  (User.photo.startsWith('http') ? User.photo : `http://localhost:8000${User.photo}`) 
+                  : `http://localhost:8000/media/users/photos/user.png`} 
+                  alt={User.nom} 
+                />
+              </Avatar>
+              {User.role === "agent" && (
+                <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-0.5">
+                  <BadgeCheck className="h-3 w-3 text-white" />
+                </div>
+              )}
+            </div>
             
             <div className="flex-1">
-              <p className="font-semibold flex items-center gap-2 text-sm leading-tight">
-                <Link href={user?.id === User.id ? "profile" : `profile/${User.id}`} className="hover:border-b hover:border-gray-800 pb-0">
+              <p className="font-semibold flex items-center gap-2 text-base leading-tight">
+                <Link href={user?.id === User.id ? "profile" : `profile/${User.id}`} className="hover:text-primary transition-colors hover:border-b hover:border-primary pb-0">
                   {User.nom} 
                 </Link>
                 {User.role === "agent" && (
-                  <span className="text-xs">
-                    <BadgeCheck className="h-4 w-4 text-green-500" />
-                  </span>
+                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 border-green-200">
+                    Agent vérifié
+                  </Badge>
                 )}
               </p>
-              <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString()}</p>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>{new Date().toLocaleDateString()}</span>
+                {statut === 'approuve' && (
+                  <Badge variant="outline" className="text-xs border-green-200 text-green-700 bg-green-50">
+                    Approuvé
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
             <DropdownMenu>
@@ -202,44 +216,44 @@ export function ReportCard({
 
         {/* Description Section */}
         <div className="px-4 pb-3">
-          <div className="flex items-center justify-end gap-0.5 text-muted-foreground mt-2">
-            <MapPin className="h-4 w-4" />
-            <span className="text-xs">{lieu}</span>
+          <div className="flex items-center gap-2 text-muted-foreground mt-3 mb-2">
+            <MapPin className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">{lieu}</span>
           </div>
-          <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">{description}</p>
+          <p className="text-base text-foreground leading-relaxed whitespace-pre-line">{description}</p>
         </div>
 
       
-        {/* Actions Section - Facebook Style */}
-        <div className="px-4 py-2 border-t border-border" onClick={(e) => e.stopPropagation()}>
+        {/* Actions Section - Enhanced Design */}
+        <div className="px-4 py-3 border-t border-border/50 bg-linear-to-r from-muted/20 to-background" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1">
             <Button 
               variant="ghost" 
               size="sm" 
-              className={`flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted ${is_liked ? 'text-red-500 hover:text-red-600' : ''}`}
+              className={`flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-all duration-200 ${is_liked ? 'text-red-500 hover:text-red-600' : ''}`}
               onClick={() => toggleLike(id)}
               disabled={isToggling}
             >
-              <Heart className={`h-4 w-4 ${is_liked ? 'fill-current' : ''}`} />
-              <span className="text-xs">{like_count || 0}</span>
+              <Heart className={`h-5 w-5 ${is_liked ? 'fill-current scale-110' : ''}`} />
+              <span className="text-sm font-medium">{like_count || 0}</span>
             </Button>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+              className="flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-all duration-200"
               onClick={() => setShowComments(!showComments)}
             >
-              <MessageCircle className="h-4 w-4" />
-              <span className="text-xs">{comments?.length || 0}</span>
+              <MessageCircle className="h-5 w-5" />
+              <span className="text-sm font-medium">{comments?.length || 0}</span>
             </Button>
             <Button 
               variant="ghost" 
               onClick={() => setIsShareOpen(true)}
               size="sm" 
-              className="flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+              className="flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-all duration-200"
             >
-              <Share2 className="h-4 w-4" />
-              <span className="text-xs">Partager</span>
+              <Share2 className="h-5 w-5" />
+              <span className="text-sm font-medium">Partager</span>
             </Button>
           </div>
         </div>
@@ -316,32 +330,46 @@ export function ReportCard({
       </Card>
     ) : 
         <Card 
-          className="w-full overflow-hidden bg-card border-0 shadow-md hover:shadow-lg transition-shadow duration-300 -gap-6 cursor-pointer"
+          className="w-full overflow-hidden bg-card border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer group"
           onClick={() => setIsDetailOpen(true)}
         >
       {/* Header Section - Author Info */}
-      <div className="p-4 flex items-start justify-between" onClick={(e) => e.stopPropagation()}>
+      <div className="p-4 flex items-start justify-between bg-linear-to-r from-background/50 to-background" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 flex-1">
-          <Avatar className="h-10 w-10">
-            <AvatarImage 
-              src={User.photo ? 
-              (User.photo.startsWith('http') ? User.photo : `http://localhost:8000${User.photo}`) 
-              : `http://localhost:8000/media/users/photos/user.png`} 
-              alt={User.nom} 
-            />
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+              <AvatarImage 
+                src={User.photo ? 
+                (User.photo.startsWith('http') ? User.photo : `http://localhost:8000${User.photo}`) 
+                : `http://localhost:8000/media/users/photos/user.png`} 
+                alt={User.nom} 
+              />
+            </Avatar>
+            {User.role === "agent" && (
+              <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-0.5">
+                <BadgeCheck className="h-3 w-3 text-white" />
+              </div>
+            )}
+          </div>
           <div className="flex-1">
-           <p className="font-semibold flex items-center gap-2 text-sm leading-tight">
-                <Link href={user?.id === User.id ? "profile" : `profile/${User.id}`}  className="hover:border-b hover:border-gray-800 pb-0">
+           <p className="font-semibold flex items-center gap-2 text-base leading-tight">
+                <Link href={user?.id === User.id ? "profile" : `profile/${User.id}`}  className="hover:text-primary transition-colors hover:border-b hover:border-primary pb-0">
                   {User.nom} 
                 </Link>
                 {User.role === "agent" && 
-                  <span className="text-xs">
-                    <BadgeCheck className="h-4 w-4 text-green-500" />
-                  </span>
+                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 border-green-200">
+                    Agent vérifié
+                  </Badge>
                 }
               </p>
-            <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString()}</p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>{new Date().toLocaleDateString()}</span>
+              {statut === 'approuve' && (
+                <Badge variant="outline" className="text-xs border-green-200 text-green-700 bg-green-50">
+                  Approuvé
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
         <DropdownMenu>
@@ -387,11 +415,11 @@ export function ReportCard({
 
       {/* Description Section */}
       <div className="px-4 ">
-        <div className="flex items-center justify-end gap-0.5 text-muted-foreground mt-2">
-          <MapPin className="h-4 w-4" />
-          <span className="text-xs">{lieu}</span>
+        <div className="flex items-center gap-2 text-muted-foreground mt-3 mb-2">
+          <MapPin className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium">{lieu}</span>
         </div>
-        <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">{description}</p>
+        <p className="text-base text-foreground leading-relaxed whitespace-pre-line">{description}</p>
       </div>
 
       {/* Image Gallery Section */}
@@ -432,36 +460,36 @@ export function ReportCard({
         </div>
       )}
 
-      {/* Actions Section - Facebook Style */}
-      <div className="px-4 py-2 border-t border-border" onClick={(e) => e.stopPropagation()}>
+      {/* Actions Section - Enhanced Design */}
+      <div className="px-4 py-3 border-t border-border/50 bg-linear-to-r from-muted/20 to-background" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-1">
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted ${is_liked ? 'text-red-500 hover:text-red-600' : ''}`}
+            className={`flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-all duration-200 ${is_liked ? 'text-red-500 hover:text-red-600' : ''}`}
             onClick={() => toggleLike(id)}
             disabled={isToggling}
           >
-            <Heart className={`h-4 w-4 ${is_liked ? 'fill-current' : ''}`} />
-            <span className="text-xs">{like_count || 0}</span>
+            <Heart className={`h-5 w-5 ${is_liked ? 'fill-current scale-110' : ''}`} />
+            <span className="text-sm font-medium">{like_count || 0}</span>
           </Button>
           <Button 
             variant="ghost" 
             size="sm" 
-            className="flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+            className="flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-all duration-200"
             onClick={() => setShowComments(!showComments)}
           >
-            <MessageCircle className="h-4 w-4" />
-            <span className="text-xs">{comments?.length || 0}</span>
+            <MessageCircle className="h-5 w-5" />
+            <span className="text-sm font-medium">{comments?.length || 0}</span>
           </Button>
           <Button 
             variant="ghost" 
             onClick={() => setIsShareOpen(true)}
             size="sm" 
-            className="flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+            className="flex-1 gap-2 justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-all duration-200"
           >
-            <Share2 className="h-4 w-4" />
-            <span className="text-xs">Partager</span>
+            <Share2 className="h-5 w-5" />
+            <span className="text-sm font-medium">Partager</span>
           </Button>
         </div>
       </div>
