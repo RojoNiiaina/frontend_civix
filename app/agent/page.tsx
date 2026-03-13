@@ -64,6 +64,12 @@ export default function AgentDashboard() {
               <p className="text-muted-foreground">Vue d'ensemble des activités et performances</p>
             </div>
             <div className="flex flex-wrap gap-3">
+              <Link href="/agent/live">
+                <Button variant="outline" className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors">
+                  <Users className="h-4 w-4" />
+                  Live vidéo
+                </Button>
+              </Link>
               <Link href="/agent/manage">
                 <Button variant="outline" className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors">
                   <Users className="h-4 w-4" />

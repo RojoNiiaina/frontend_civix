@@ -83,3 +83,42 @@ export interface Conversation {
   unreadCount: number;
   isOnline?: boolean;
 }
+
+export interface LiveStream {
+  id: number
+  title: string
+  description: string
+  streamer: number
+  streamer_name: string
+  streamer_photo?: string
+  stream_key: string
+  thumbnail?: string
+  status: 'pending' | 'live' | 'ended' | 'cancelled'
+  started_at?: string
+  ended_at?: string
+  viewer_count: number
+  max_viewers: number
+  created_at: string
+  updated_at: string
+  duration?: string
+}
+
+export interface LiveMessage {
+  id: number
+  stream: number
+  user: number
+  user_name: string
+  user_photo_url?: string
+  content: string
+  created_at: string
+}
+
+export interface LiveViewer {
+  id: number
+  stream: number
+  user?: number
+  user_name?: string
+  session_id: string
+  joined_at: string
+  left_at?: string
+}
