@@ -18,11 +18,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import url from "constants"
+
 
 export default function AgentsPage() {
   const { users, loading, error, refetch, handleStatusToggle, handleDeleteUser, handlePromoteToAdmin } = useUsers()
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+
+  const API_BASE_URL = "http://192.168.42.64:8000"
 
   const handleAgentAdded = () => {
     refetch()
@@ -43,6 +47,24 @@ export default function AgentsPage() {
       await handlePromoteToAdmin(userId)
     }
   }
+
+    const getUserPhotoUrl = (photo?: string) => {
+    if (!photo) return `${url}/reports/users/photos/user.png`;
+    // Si l'URL est déjà complète (commence par http), la retourner telle quelle
+    if (photo.startsWith('http')) {
+      return photo;
+    }
+    // Si le chemin commence déjà par /media/, ajouter seulement la base URL
+    if (photo.startsWith('/media/')) {
+      return `${url}${photo}`;
+    }
+    // Si le chemin commence déjà par /reports/, ajouter seulement la base URL
+    if (photo.startsWith('/reports/')) {
+      return `${url}${photo}`;
+    }
+    // Sinon, construire l'URL complète avec la base URL
+    return `${url}/reports/${photo}`;
+  };
 
   // Filtrer les utilisateurs localement - n'afficher que les agents
   const filteredUsers = users.filter(user => {
@@ -234,7 +256,7 @@ export default function AgentsPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.photo } alt={user.nom} />
+                          <AvatarImage src={getUserPhotoUrl(user.photo)} alt={user.nom} />
                           <AvatarFallback className="bg-primary/10 text-primary text-xs">
                             {user.nom
                               .split(" ")

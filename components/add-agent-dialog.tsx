@@ -75,7 +75,7 @@ export function AddAgentDialog({ open, onOpenChange, onAgentAdded }: AddAgentDia
     setError("")
 
     try {
-      const response = await fetch(`${API_BASE_URL}/users/`, {
+      const response = await fetch(`${API_BASE_URL}/users/register/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
