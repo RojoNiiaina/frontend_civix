@@ -166,55 +166,70 @@ export default function LiveEventPage() {
       }
       
       ws.onmessage = async (event) => {
-        const data = JSON.parse(event.data)
-        
-        switch (data.type) {
-          case 'chat_message':
-            // Update messages through useLive hook
-            await fetchMessages(currentStream.id)
-            break
-            
-          case 'webrtc_offer':
-            if (user?.role !== 'agent') {
-              // Viewer receives offer, create answer
-              const answer = await createAnswer(data.offer)
-              if (answer) {
-                ws.send(JSON.stringify({
-                  type: 'webrtc_answer',
-                  answer
-                }))
+        try {
+          const data = JSON.parse(event.data)
+          
+          switch (data.type) {
+            case 'chat_message':
+              // Update messages through useLive hook
+              await fetchMessages(currentStream.id)
+              break
+              
+            case 'webrtc_offer':
+              if (user?.role !== 'agent') {
+                // Viewer receives offer, create answer
+                const answer = await createAnswer(data.offer)
+                if (answer) {
+                  ws.send(JSON.stringify({
+                    type: 'webrtc_answer',
+                    answer
+                  }))
+                }
               }
-            }
-            break
-            
-          case 'webrtc_answer':
-            if (user?.role === 'agent') {
-              // Streamer receives answer
-              await handleRemoteDescription(data.answer)
-            }
-            break
-            
-          case 'webrtc_ice_candidate':
-            await handleIceCandidate(data.candidate)
-            break
-            
-          case 'stream_status':
-            // Update stream status
-            setCurrentStream(prev => prev ? { ...prev, status: data.status } : null)
-            break
-            
-          case 'error':
-            console.error('WebSocket error:', data.message)
-            break
+              break
+              
+            case 'webrtc_answer':
+              if (user?.role === 'agent') {
+                // Streamer receives answer
+                await handleRemoteDescription(data.answer)
+              }
+              break
+              
+            case 'webrtc_ice_candidate':
+              await handleIceCandidate(data.candidate)
+              break
+              
+            case 'stream_status':
+              // Update stream status
+              setCurrentStream(prev => prev ? { ...prev, status: data.status } : null)
+              break
+              
+            case 'error':
+              console.error('WebSocket error:', data.message)
+              break
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error)
         }
       }
       
-      ws.onclose = () => {
-        console.log('WebSocket disconnected')
+      ws.onclose = (event) => {
+        console.log('WebSocket disconnected', event.code, event.reason)
+        if (event.code !== 1000) {
+          // Unexpected close - try to reconnect after delay
+          setTimeout(() => {
+            if (currentStream) {
+              console.log('Attempting to reconnect WebSocket...')
+              // The useEffect will re-run and create a new connection
+            }
+          }, 3000)
+        }
       }
       
       ws.onerror = (error) => {
         console.error('WebSocket error:', error)
+        // Show user-friendly error message
+        alert('Erreur de connexion WebSocket. Veuillez vérifier que le serveur backend est en cours d\'exécution.')
       }
       
       setWebsocket(ws)
@@ -223,7 +238,7 @@ export default function LiveEventPage() {
         ws.close()
       }
     }
-  }, [currentStream])
+  }, [currentStream, user])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -253,6 +268,8 @@ export default function LiveEventPage() {
   }
   
   const handleStartLive = async () => {
+
+    
     try {
       // Create stream automatically with default values
       const defaultStreamData = {
@@ -393,12 +410,6 @@ export default function LiveEventPage() {
             )}
           </div>
           <div className="flex items-center gap-4">
-            {!currentStream && (
-              <Button onClick={() => setShowCreateForm(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Nouveau Live
-              </Button>
-            )}
             <div className="flex items-center gap-2 text-muted-foreground">
               <Eye className="w-4 h-4" />
               <span className="font-medium">{viewerCount}</span>
@@ -411,98 +422,7 @@ export default function LiveEventPage() {
           </div>
         </div>
         
-        {/* Create Stream Form */}
-        {showCreateForm && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Créer un nouveau live</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Titre du live</label>
-                <Input
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Entrez le titre de votre live..."
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Description</label>
-                <Input
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Décrivez le sujet de votre live..."
-                  className="mt-1"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={handleCreateStream} disabled={!formData.title.trim()}>
-                  Créer le live
-                </Button>
-                <Button variant="outline" onClick={() => setShowCreateForm(false)}>
-                  Annuler
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-        
-        {/* My Streams */}
-        {/* {!currentStream && myStreams.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Mes lives</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {myStreams.map((stream) => (
-                  <div key={stream.id} className="flex items-center justify-between p-3 border rounded">
-                    <div>
-                      <h3 className="font-medium">{stream.title}</h3>
-                      <p className="text-sm text-muted-foreground">{stream.description}</p>
-                      <Badge variant={stream.status === 'live' ? 'destructive' : 'secondary'}>
-                        {stream.status}
-                      </Badge>
-                    </div>
-                    <div className="flex gap-2">
-                      {stream.status === 'pending' && (
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setCurrentStream(stream)
-                            handleStartLive()
-                          }}
-                        >
-                          Démarrer
-                        </Button>
-                      )}
-                      {stream.status === 'live' && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => {
-                            setCurrentStream(stream)
-                            handleStopLive()
-                          }}
-                        >
-                          Arrêter
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setCurrentStream(stream)}
-                      >
-                        Gérer
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )} */}
+      
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Video Area */}
@@ -590,10 +510,10 @@ export default function LiveEventPage() {
                       {isAudioOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
                     </Button>
                     <Separator orientation="vertical" className="h-6" />
-                    {currentStream && currentStream.status === 'pending' && (
+                    {!currentStream && (
                       <Button onClick={handleStartLive} className="bg-red-600 hover:bg-red-700">
                         <div className="w-2 h-2 bg-white rounded-full mr-2" />
-                        Commencer le live
+                        Commencer un live
                       </Button>
                     )}
                     {currentStream && currentStream.status === 'live' && (
@@ -602,12 +522,13 @@ export default function LiveEventPage() {
                         Terminer le live
                       </Button>
                     )}
-                    {!currentStream && (
-                      <Button onClick={() => setShowCreateForm(true)} className="bg-red-600 hover:bg-red-700">
+                    {currentStream && currentStream.status === 'ended' && (
+                      <Button variant="destructive" onClick={handleStartLive}>
                         <div className="w-2 h-2 bg-white rounded-full mr-2" />
-                        Commencer un live
+                        Commence un live
                       </Button>
                     )}
+                    
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Clock className="w-4 h-4" />

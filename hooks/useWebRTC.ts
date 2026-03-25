@@ -82,6 +82,12 @@ export function useWebRTC(config: WebRTCConfig = {}) {
   // Start local stream
   const startLocalStream = async () => {
     try {
+      // Initialize peer connection first
+      const pc = initializePeerConnection()
+      if (!pc) {
+        throw new Error('Failed to initialize peer connection')
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia(
         config.videoConstraints || defaultVideoConstraints
       )
@@ -94,12 +100,9 @@ export function useWebRTC(config: WebRTCConfig = {}) {
       }
 
       // Add tracks to peer connection
-      const pc = peerConnectionRef.current
-      if (pc) {
-        stream.getTracks().forEach(track => {
-          pc.addTrack(track, stream)
-        })
-      }
+      stream.getTracks().forEach(track => {
+        pc.addTrack(track, stream)
+      })
 
       return stream
     } catch (err) {
@@ -132,8 +135,8 @@ export function useWebRTC(config: WebRTCConfig = {}) {
 
     try {
       const offer = await pc.createOffer({
-        offerToReceiveAudio: false,
-        offerToReceiveVideo: false
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
       })
       
       await pc.setLocalDescription(offer)
