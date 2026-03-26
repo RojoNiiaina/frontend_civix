@@ -19,7 +19,7 @@ import {
   Pin,
   Loader2
 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn, getProfileImageUrl } from "@/lib/utils"
 import { useConversations } from "@/hooks/useChat"
 import { Conversation } from "@/lib/utils"
 
@@ -61,7 +61,7 @@ export function FeedSidebarRight() {
   return (
     <div className="w-full space-y-4">
       {/* Search Bar */}
-      <Card className="bg-card border border-border/50 shadow-lg">
+      <Card className="bg-card border border-border/50 shadow-sm">
         <div className="p-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -76,10 +76,10 @@ export function FeedSidebarRight() {
       </Card>
 
       {/* Active Discussions */}
-      <Card className="bg-card border border-border/50 shadow-lg">
-        <div className="p-3 sm:p-4">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h3 className="font-semibold flex items-center gap-2 text-sm sm:text-base">
+      <Card className="bg-card border border-border/50 shadow-sm">
+        <div className="p-3">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold flex items-center gap-2 text-sm">
               <MessageCircle className="h-4 w-4" />
               Discussions
             </h3>
@@ -117,13 +117,13 @@ export function FeedSidebarRight() {
                           <Users className="h-4 w-4 text-primary-foreground" />
                         </div>
                       ) : (
-                        <Avatar className="h-8 w-8">
+                         <Avatar className="h-8 w-8 ring-2 ring-primary/20">
                           <AvatarImage 
                             src={conversation.user.photo ? 
-                              (conversation.user.photo.startsWith('http') ? conversation.user.photo : `http://localhost:8000${conversation.user.photo}`) 
-                              : undefined} 
+                            (conversation.user.photo.startsWith('http') ? conversation.user.photo : `http://localhost:8000${conversation.user.photo}`) 
+                            : `http://localhost:8000/media/users/photos/user.png`} 
+                            alt={conversation.user.nom} 
                           />
-                          <AvatarFallback>{conversation.user.nom.charAt(0)}</AvatarFallback>
                         </Avatar>
                       )}
                       {conversation.isOnline && conversation.id !== 0 && (
@@ -145,7 +145,7 @@ export function FeedSidebarRight() {
                         </span>
                       </div>
                       <div className="flex items-center justify-between mt-0.5">
-                        <p className="text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-[140px]">
+                        <p className="text-xs text-muted-foreground truncate max-w-[120px] lg:max-w-[140px]">
                           {conversation.lastMessage?.content || "Aucun message"}
                         </p>
                         <div className="flex items-center gap-1 shrink-0 ml-2">

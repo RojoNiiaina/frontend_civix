@@ -5,6 +5,23 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Construit l'URL complète pour la photo de profil d'un utilisateur
+ */
+export function getProfileImageUrl(photo?: string): string | null {
+  if (!photo) return null
+  // Si l'image commence par http, c'est déjà une URL complète (retournée par le serializer)
+  if (photo.startsWith('http://') || photo.startsWith('https://')) {
+    return photo
+  }
+  // Si l'image commence par /media/, c'est une URL relative du backend Django
+  if (photo.startsWith('/media/')) {
+    return `http://localhost:8000${photo}`
+  }
+  // Sinon, essayer de construire l'URL complète
+  return `http://localhost:8000/media/${photo}`
+}
+
 // lib/utils/models.ts
 
 export type statutUser = "user" | "agent" | "admin"

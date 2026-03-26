@@ -1,6 +1,6 @@
 
 
-import { Bell, MapPin, Menu, Search, User, Settings, MessageCircle } from "lucide-react"
+import { Bell, Menu, User, Settings, MessageCircle, Home, } from "lucide-react"
 import { Button } from "./ui/button"
 import Link from "next/link"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu"
@@ -41,14 +41,37 @@ export default function NavBar() {
                             </DropdownMenuItem>
                             {
                                 user?.role !== "agent" && (
-                                    <DropdownMenuItem asChild>
-                                        <Link href="/chat" className="flex w-full cursor-pointer items-center">
-                                            <MessageCircle className="mr-2 h-4 w-4" />
-                                            <span>Messages</span>
-                                        </Link>
-                                    </DropdownMenuItem>
+                                    <>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/chat" className="flex w-full cursor-pointer items-center">
+                                                <MessageCircle className="mr-2 h-4 w-4" />
+                                                <span>Messages</span>
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        
+                                    </>
                                 )
                             }
+                            {
+                                user?.role === "agent" &&(
+                                    <>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/feed" className="flex w-full cursor-pointer items-center">
+                                                <Home className="mr-2 h-4 w-4" />
+                                                <span>Publication</span>
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/agent" className="flex w-full cursor-pointer items-center">
+                                                <Home className="mr-2 h-4 w-4" />
+                                                <span>Tableau de board</span>
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    </>
+                                    
+                                )
+                            }
+                            
                             
                             <DropdownMenuItem asChild>
                                 <Link href="/settings" className="flex w-full cursor-pointer items-center">
@@ -56,11 +79,11 @@ export default function NavBar() {
                                     <span>Paramètres</span>
                                 </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="relative">
+                            {/* <DropdownMenuItem className="relative">
                                 <Bell className="mr-2 h-4 w-4" />
                                 <span>Notifications</span>
                                 <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
-                            </DropdownMenuItem>
+                            </DropdownMenuItem> */}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                                 <LogoutDialog/>

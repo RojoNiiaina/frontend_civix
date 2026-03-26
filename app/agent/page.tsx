@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import useReports from "@/hooks/useReports"
 import useAuth from "@/hooks/useAuth"
+import { useReportWebSocket } from "@/hooks/useReportWebSocket"
 import NavBar from "@/components/NavBar"
 import { AgentStatsCard } from "@/components/agent-stats-card"
 import { UrgentPrioritiesCard } from "@/components/urgent-priorities-card"
@@ -30,13 +31,19 @@ import {
   Calendar,
   Filter,
   MoreVertical,
+  Wifi,
+  WifiOff,
 } from "lucide-react"
 import useRecentReports from "@/hooks/useRecentReports"
 import { ReportCard } from "@/components/report-card"
 import { AddAgentDialog } from "@/components/add-agent-dialog"
+import { useEffect, useState } from "react"
 
 export default function AgentDashboard() {
   const { data: reports = [], isLoading, error } = useReports()
+  const { isConnected, unreadCount, lastMessage } = useReportWebSocket()
+  const [showNotification, setShowNotification] = useState(false)
+  
   const stats = {
     newReports: reports.filter(report => report.statut === 'en_attente').length,
     approuve: reports.filter(report => report.statut === 'approuve').length,
@@ -48,6 +55,14 @@ export default function AgentDashboard() {
     weeklyTrend: 15
   }
 
+  // Afficher une notification quand un nouveau report arrive
+  useEffect(() => {
+    if (lastMessage?.type === 'new_report') {
+      setShowNotification(true)
+      setTimeout(() => setShowNotification(false), 5000)
+    }
+  }, [lastMessage])
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -56,6 +71,40 @@ export default function AgentDashboard() {
 
       {/* Main Content */}
       <div className="container mx-auto px-6 py-8">
+        {/* WebSocket Status & Notification */}
+        <div className="mb-4 flex items-center justify-between">
+          {/* <div className="flex items-center gap-2">
+            {isConnected ? (
+              <div className="flex items-center gap-2 text-green-600">
+                <Wifi className="h-4 w-4" />
+                <span className="text-sm">Connecté en temps réel</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-red-600">
+                <WifiOff className="h-4 w-4" />
+                <span className="text-sm">Hors ligne</span>
+              </div>
+            )}
+          </div> */}
+          
+          {/* Notification Toast */}
+          {showNotification && lastMessage?.type === 'new_report' && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in slide-in-from-top-2">
+              <Bell className="h-5 w-5" />
+              <div>
+                <p className="font-medium">Nouveau signalement reçu!</p>
+                <p className="text-sm opacity-90">{lastMessage.report?.description?.substring(0, 50)}...</p>
+              </div>
+              <button 
+                onClick={() => setShowNotification(false)}
+                className="ml-4 text-blue-600 hover:text-blue-800"
+              >
+                ×
+              </button>
+            </div>
+          )}
+        </div>
+        
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -86,9 +135,11 @@ export default function AgentDashboard() {
                 <Button variant="outline" className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors relative">
                   <Bell className="h-4 w-4" />
                   Messages
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white border-2 border-background">
-                    3
-                  </Badge>
+                  {unreadCount > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white border-2 border-background">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Badge>
+                  )}
                 </Button>
               </Link>
             </div>

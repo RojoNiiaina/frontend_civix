@@ -51,11 +51,11 @@ export function FeedSidebarLeft() {
   }
 
   return (
-    <Card className="w-full bg-card border border-border/50 shadow-lg sticky top-20">
-      <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+    <Card className="w-full bg-card border border-border/50 shadow-sm">
+      <div className="p-4 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-base sm:text-lg">Explorer</h3>
+          <h3 className="font-semibold text-base">Explorer</h3>
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
             <Filter className="h-4 w-4" />
           </Button>
@@ -179,7 +179,7 @@ export function FeedSidebarLeft() {
         </div>
 
         {/* Stats */}
-        <div className="pt-3 sm:pt-4 border-t border-border/50">
+        <div className="pt-4 border-t border-border/50">
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Utilisateurs actifs</span>

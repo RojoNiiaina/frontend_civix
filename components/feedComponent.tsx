@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, MapPin, Search, Settings, Map, Menu, User, LogOut, Plus, Grid, List } from "lucide-react"
+import { Bell, MapPin, Search, Settings, Map, Menu, User, LogOut, Plus, Grid, List, MessageCircle } from "lucide-react"
 import { ReportCard } from "@/components/report-card"
 import { CreateReportDialog } from "@/components/create-report-dialog"
 import { LogoutDialog } from "@/components/logout-dialog"
@@ -22,6 +22,7 @@ import { useEffect, useState } from "react"
 import NavBar from "./NavBar"
 import { FloatingCreateButton } from "./floating-create-button"
 import { cn } from "@/lib/utils"
+import { User as Users} from "@/lib/utils"
 
 export default function FeedComponent() {
   const {
@@ -30,138 +31,154 @@ export default function FeedComponent() {
     error,
   } = useReports()
 
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [showLeftSidebar, setShowLeftSidebar] = useState(true)
-  const [showRightSidebar, setShowRightSidebar] = useState(true)
+  const [showLeftSidebar, setShowLeftSidebar] = useState(false)
+  const [showRightSidebar, setShowRightSidebar] = useState(false)
+
+
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <NavBar />
 
       {/* Floating Action Button - Mobile */}
       <FloatingCreateButton />
 
-      {/* Main Layout Grid */}
-      <div className="flex gap-6 px-4 lg:px-6 xl:px-8">
-        {/* Left Sidebar - Hidden on mobile */}
-        <div className={cn(
-          "hidden lg:block transition-all duration-300 shrink-0",
-          showLeftSidebar ? "w-72" : "w-0"
-        )}>
-          <div className="sticky top-20">
-            <FeedSidebarLeft />
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1 min-w-0">
-          {/* Header Actions */}
-          <div className="sticky top-14 z-30 bg-background/95 backdrop-blur border-b border-border/50 mb-6">
-            <div className="py-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <h1 className="text-xl sm:text-2xl font-bold">Fil d'actualités</h1>
-                  {/* <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-                    <Button
-                      variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                      size="sm"
-                      onClick={() => setViewMode('grid')}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Grid className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                      size="sm"
-                      onClick={() => setViewMode('list')}
-                      className="h-8 w-8 p-0"
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </div> */}
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="lg:hidden"
-                    onClick={() => setShowLeftSidebar(!showLeftSidebar)}
-                  >
-                    <Menu className="h-4 w-4 mr-2" />
-                    Filtres
-                  </Button>
-                  <div className="hidden lg:block">
-                    <CreateReportDialog />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Feed Content */}
-          <div className="space-y-6">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-            ) : error ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">Erreur lors du chargement des publications</p>
-              </div>
-            ) : (
-              <div className={cn(
-                "space-y-6",
-                // viewMode === 'grid' && "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-              )}>
-                {reports.filter(report => report.statut === 'approuve').map((report, index) => (
-                  <div key={index} className="feed-item-enter">
-                    <ReportCard {...report} />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {reports.filter(report => report.statut === 'approuve').length === 0 && !isLoading && (
-              <div className="text-center py-16">
-                <div className="max-w-md mx-auto space-y-4">
-                  <p className="text-muted-foreground text-lg">Aucune publication à afficher</p>
-                  <div className="hidden lg:block">
-                    <CreateReportDialog />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Sidebar - Hidden on tablet and mobile */}
-        <div className={cn(
-          "hidden xl:block transition-all duration-300 shrink-0",
-          showRightSidebar ? "w-80" : "w-0"
-        )}>
-          <div className="sticky top-20">
-            <FeedSidebarRight />
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Sidebar Overlays */}
-      {showLeftSidebar && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-50 lg:hidden"
-          onClick={() => setShowLeftSidebar(false)}
-        >
-          <div 
-            className="fixed left-0 top-0 h-full w-72 bg-background z-50 overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
+      {/* Main Layout */}
+      <div className="relative min-h-screen">
+        {/* Mobile Sidebar Toggle */}
+        <div className="lg:hidden fixed top-20 right-4 z-40 flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowLeftSidebar(!showLeftSidebar)}
+            className="bg-background shadow-md"
           >
-            <div className="p-4 pt-20">
+            <Menu className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowRightSidebar(!showRightSidebar)}
+            className="bg-background shadow-md"
+          >
+            <MessageCircle className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className=" flex gap-4 lg:gap-6 px-4 lg:px-6 xl:px-8">
+          {/* Left Sidebar */}
+          <div className={cn(
+            "fixed lg:sticky lg:top-14 transition-all duration-300 z-30 h-full bg-background lg:bg-transparent border-r lg:border-r-0",
+            showLeftSidebar ? "left-0 w-72" : "-left-80 w-72",
+            "lg:w-72 xl:w-80 lg:self-start"
+          )}>
+            <div className="h-screen lg:h-auto lg:block overflow-y-auto p-4 lg:py-4">
+              <div className="lg:hidden flex justify-between items-center mb-4">
+                <h3 className="font-semibold">Filtres</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowLeftSidebar(false)}
+                >
+                  ×
+                </Button>
+              </div>
               <FeedSidebarLeft />
             </div>
           </div>
+
+          {/* Overlay for mobile */}
+          {showLeftSidebar && (
+            <div 
+              className="lg:hidden fixed inset-0 bg-black/50 z-20"
+              onClick={() => setShowLeftSidebar(false)}
+            />
+          )}
+
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            {/* Header */}
+            <div className="sticky top-14 z-10 bg-white backdrop-blur border-b border-border/50">
+              <div className="py-2 mb-2">
+                <div className="flex items-center justify-between px-5">
+                  <div className="flex items-center gap-4">
+                    <h1 className="text-lg lg:text-xl font-bold">Fil d'actualités</h1>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {/* Desktop Create Button */}
+                    <div className="hidden lg:block">
+                      <CreateReportDialog />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feed Content */}
+            <div className="space-y-6">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : error ? (
+                <div className="text-center py-20">
+                  <p className="text-muted-foreground">Erreur lors du chargement des publications</p>
+                </div>
+              ) : (
+                <div className="space-y-6 ">
+                  {reports.filter(report => report.statut === 'approuve').map((report, index) => (
+                    <div key={index} className="feed-item-enter">
+                      <ReportCard {...report} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {reports.filter(report => report.statut === 'approuve').length === 0 && !isLoading && (
+                <div className="text-center py-20">
+                  <div className="max-w-md mx-auto space-y-4">
+                    <p className="text-muted-foreground text-lg">Aucune publication à afficher</p>
+                    <div className="hidden lg:block">
+                      <CreateReportDialog />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className={cn(
+            "fixed lg:sticky lg:top-14 transition-all duration-300 z-30 h-full bg-background lg:bg-transparent border-l lg:border-l-0",
+            showRightSidebar ? "right-0 w-80" : "-right-96 w-80",
+            "lg:w-80 xl:w-96 lg:self-start"
+          )}>
+            <div className="h-screen lg:h-auto overflow-y-auto p-4 lg:py-4">
+              <div className="lg:hidden flex justify-between items-center mb-4">
+                <h3 className="font-semibold">Discussions</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowRightSidebar(false)}
+                >
+                  ×
+                </Button>
+              </div>
+              <FeedSidebarRight />
+            </div>
+          </div>
+
+          {/* Overlay for mobile right sidebar */}
+          {showRightSidebar && (
+            <div 
+              className="lg:hidden fixed inset-0 bg-black/50 z-20"
+              onClick={() => setShowRightSidebar(false)}
+            />
+          )}
         </div>
-      )}
+      </div>
+
     </div>
   )
 }
