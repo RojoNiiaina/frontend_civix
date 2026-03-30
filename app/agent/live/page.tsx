@@ -72,6 +72,8 @@ export default function LiveEventPage() {
     leaveStream
   } = useLive()
   
+  const activeViewerSessionIdRef = useRef<string | null>(null)
+
   const {
     localStream,
     remoteStream,
@@ -91,7 +93,19 @@ export default function LiveEventPage() {
     getVideoState,
     getAudioState,
     cleanup
-  } = useWebRTC()
+  } = useWebRTC({
+    onIceCandidate: (candidate) => {
+      // Send ICE candidate to signaling server (viewer-scoped)
+      if (!websocket) return
+      const viewerSessionId = activeViewerSessionIdRef.current
+      if (!viewerSessionId) return
+      websocket.send(JSON.stringify({
+        type: 'webrtc_ice_candidate',
+        candidate,
+        viewerSessionId
+      }))
+    }
+  })
   
   const [currentStream, setCurrentStream] = useState<LiveStream | null>(null)
   const [message, setMessage] = useState('')
@@ -159,10 +173,21 @@ export default function LiveEventPage() {
   // WebSocket connection for signaling
   useEffect(() => {
     if (currentStream) {
-      const ws = new WebSocket(`ws://localhost:8000/ws/live/${currentStream.id}/`)
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      const roleParam = user?.role === 'agent' ? 'role=streamer' : 'role=viewer'
+      const tokenParam = token ? `token=${encodeURIComponent(token)}` : null
+      const qs = [tokenParam, roleParam].filter(Boolean).join('&')
+      const wsUrl = `ws://localhost:8000/ws/live/${currentStream.id}/?${qs}`
+      const ws = new WebSocket(wsUrl)
       
       ws.onopen = () => {
         console.log('WebSocket connected')
+        if (user?.role !== 'agent') {
+          // Viewer announces itself to request an offer (backend will forward to streamer)
+          const viewerSessionId = Math.random().toString(36).slice(2, 10)
+          activeViewerSessionIdRef.current = viewerSessionId
+          ws.send(JSON.stringify({ type: 'viewer_join', viewerSessionId }))
+        }
       }
       
       ws.onmessage = async (event) => {
@@ -174,6 +199,21 @@ export default function LiveEventPage() {
               // Update messages through useLive hook
               await fetchMessages(currentStream.id)
               break
+            
+            case 'viewer_join':
+              if (user?.role === 'agent' && data.viewerSessionId) {
+                // Streamer: remember which viewer we're currently serving, then send offer
+                activeViewerSessionIdRef.current = data.viewerSessionId
+                const offer = await createOffer()
+                if (offer) {
+                  ws.send(JSON.stringify({
+                    type: 'webrtc_offer',
+                    offer,
+                    viewerSessionId: data.viewerSessionId
+                  }))
+                }
+              }
+              break
               
             case 'webrtc_offer':
               if (user?.role !== 'agent') {
@@ -182,7 +222,8 @@ export default function LiveEventPage() {
                 if (answer) {
                   ws.send(JSON.stringify({
                     type: 'webrtc_answer',
-                    answer
+                    answer,
+                    viewerSessionId: data.viewerSessionId
                   }))
                 }
               }
@@ -190,12 +231,19 @@ export default function LiveEventPage() {
               
             case 'webrtc_answer':
               if (user?.role === 'agent') {
-                // Streamer receives answer
+                // Streamer receives answer (viewer-scoped)
+                if (!data.viewerSessionId) break
+                if (data.viewerSessionId !== activeViewerSessionIdRef.current) break
                 await handleRemoteDescription(data.answer)
               }
               break
               
             case 'webrtc_ice_candidate':
+              // ICE candidate is viewer-scoped
+              if (user?.role === 'agent') {
+                if (!data.viewerSessionId) break
+                if (data.viewerSessionId !== activeViewerSessionIdRef.current) break
+              }
               await handleIceCandidate(data.candidate)
               break
               
@@ -286,17 +334,7 @@ export default function LiveEventPage() {
       // Start stream via API
       await startStream(newStream.id)
       setCurrentStream(prev => prev ? { ...prev, status: 'live' as const } : null)
-      
-      // Create and send WebRTC offer
-      if (websocket && user?.role === 'agent') {
-        const offer = await createOffer()
-        if (offer) {
-          websocket.send(JSON.stringify({
-            type: 'webrtc_offer',
-            offer
-          }))
-        }
-      }
+      // Offer will be created and sent when a viewer joins (message `viewer_join`)
     } catch (error) {
       console.error('Failed to start stream:', error)
     }
@@ -455,6 +493,18 @@ export default function LiveEventPage() {
                         <VideoOff className="w-16 h-16 mx-auto mb-4" />
                         <p className="text-lg">
                           {user?.role === 'agent' ? 'Caméra désactivée' : 'En attente du stream...'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {currentStream?.status === 'ended' && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                      <div className="text-center text-white px-6">
+                        <AlertCircle className="w-16 h-16 mx-auto mb-4 text-yellow-400" />
+                        <p className="text-2xl font-semibold mb-2">Live terminé</p>
+                        <p className="text-white/80">
+                          Ce live a été terminé par le diffuseur.
                         </p>
                       </div>
                     </div>

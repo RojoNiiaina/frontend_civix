@@ -4,6 +4,7 @@ export interface WebRTCConfig {
   iceServers?: RTCIceServer[]
   videoConstraints?: MediaStreamConstraints
   audioConstraints?: MediaStreamConstraints
+  onIceCandidate?: (candidate: RTCIceCandidate) => void
 }
 
 export function useWebRTC(config: WebRTCConfig = {}) {
@@ -50,9 +51,8 @@ export function useWebRTC(config: WebRTCConfig = {}) {
       
       pc.onicecandidate = (event) => {
         if (event.candidate) {
-          // Send ICE candidate to signaling server
           console.log('ICE candidate:', event.candidate)
-          // TODO: Send to signaling server
+          config.onIceCandidate?.(event.candidate)
         }
       }
 
