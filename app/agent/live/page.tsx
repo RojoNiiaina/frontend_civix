@@ -73,6 +73,7 @@ export default function LiveEventPage() {
   } = useLive()
   
   const activeViewerSessionIdRef = useRef<string | null>(null)
+  const websocketRef = useRef<WebSocket | null>(null)
 
   const {
     localStream,
@@ -96,10 +97,11 @@ export default function LiveEventPage() {
   } = useWebRTC({
     onIceCandidate: (candidate) => {
       // Send ICE candidate to signaling server (viewer-scoped)
-      if (!websocket) return
+      const ws = websocketRef.current
+      if (!ws) return
       const viewerSessionId = activeViewerSessionIdRef.current
       if (!viewerSessionId) return
-      websocket.send(JSON.stringify({
+      ws.send(JSON.stringify({
         type: 'webrtc_ice_candidate',
         candidate,
         viewerSessionId
@@ -281,9 +283,11 @@ export default function LiveEventPage() {
       }
       
       setWebsocket(ws)
+      websocketRef.current = ws
       
       return () => {
         ws.close()
+        websocketRef.current = null
       }
     }
   }, [currentStream, user])

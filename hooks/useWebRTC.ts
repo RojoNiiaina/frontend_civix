@@ -13,8 +13,14 @@ export function useWebRTC(config: WebRTCConfig = {}) {
   const [isStreaming, setIsStreaming] = useState(false)
   const [connectionState, setConnectionState] = useState<'new' | 'connecting' | 'connected' | 'disconnected' | 'failed' | 'closed'>('new')
   const [error, setError] = useState<string | null>(null)
-  
+
+  const configRef = useRef(config)
+  useEffect(() => {
+    configRef.current = config
+  }, [config])
+
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
+  const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([])
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
 
@@ -48,11 +54,11 @@ export function useWebRTC(config: WebRTCConfig = {}) {
   const initializePeerConnection = () => {
     try {
       const pc = new RTCPeerConnection(defaultConfig)
-      
+
       pc.onicecandidate = (event) => {
         if (event.candidate) {
           console.log('ICE candidate:', event.candidate)
-          config.onIceCandidate?.(event.candidate)
+          configRef.current.onIceCandidate?.(event.candidate)
         }
       }
 
@@ -91,10 +97,10 @@ export function useWebRTC(config: WebRTCConfig = {}) {
       const stream = await navigator.mediaDevices.getUserMedia(
         config.videoConstraints || defaultVideoConstraints
       )
-      
+
       setLocalStream(stream)
       setIsStreaming(true)
-      
+
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream
       }
@@ -119,7 +125,7 @@ export function useWebRTC(config: WebRTCConfig = {}) {
       setLocalStream(null)
     }
     setIsStreaming(false)
-    
+
     if (localVideoRef.current) {
       localVideoRef.current.srcObject = null
     }
@@ -138,10 +144,10 @@ export function useWebRTC(config: WebRTCConfig = {}) {
         offerToReceiveAudio: true,
         offerToReceiveVideo: true
       })
-      
+
       await pc.setLocalDescription(offer)
       console.log('Created offer:', offer)
-      
+
       // TODO: Send offer to signaling server
       return offer
     } catch (err) {
@@ -163,9 +169,9 @@ export function useWebRTC(config: WebRTCConfig = {}) {
       await pc.setRemoteDescription(offer)
       const answer = await pc.createAnswer()
       await pc.setLocalDescription(answer)
-      
+
       console.log('Created answer:', answer)
-      
+
       // TODO: Send answer to signaling server
       return answer
     } catch (err) {
@@ -183,6 +189,19 @@ export function useWebRTC(config: WebRTCConfig = {}) {
     try {
       await pc.setRemoteDescription(description)
       console.log('Set remote description:', description.type)
+
+      // Process any queued ICE candidates
+      if (pendingIceCandidatesRef.current.length > 0) {
+        console.log(`Processing ${pendingIceCandidatesRef.current.length} queued ICE candidates`)
+        for (const candidate of pendingIceCandidatesRef.current) {
+          try {
+            await pc.addIceCandidate(candidate)
+          } catch (e) {
+            console.error('Queued ICE candidate error:', e)
+          }
+        }
+        pendingIceCandidatesRef.current = []
+      }
     } catch (err) {
       setError('Failed to set remote description')
       console.error('Remote description error:', err)
@@ -193,6 +212,12 @@ export function useWebRTC(config: WebRTCConfig = {}) {
   const handleIceCandidate = async (candidate: RTCIceCandidateInit) => {
     const pc = peerConnectionRef.current
     if (!pc) return
+
+    if (!pc.remoteDescription) {
+      console.log('Queuing ICE candidate (remote description not set yet)')
+      pendingIceCandidatesRef.current.push(candidate)
+      return
+    }
 
     try {
       await pc.addIceCandidate(candidate)
@@ -246,16 +271,17 @@ export function useWebRTC(config: WebRTCConfig = {}) {
   // Cleanup
   const cleanup = () => {
     stopLocalStream()
-    
+
     if (peerConnectionRef.current) {
       peerConnectionRef.current.close()
       peerConnectionRef.current = null
     }
-    
+
+    pendingIceCandidatesRef.current = []
     setRemoteStream(null)
     setConnectionState('new')
     setError(null)
-    
+
     if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = null
     }
@@ -272,11 +298,11 @@ export function useWebRTC(config: WebRTCConfig = {}) {
     isStreaming,
     connectionState,
     error,
-    
+
     // Refs for video elements
     localVideoRef,
     remoteVideoRef,
-    
+
     // Methods
     initializePeerConnection,
     startLocalStream,

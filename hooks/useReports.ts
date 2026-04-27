@@ -124,11 +124,37 @@ export default function useReports() {
     },
   });
 
+  const RejeteMutation = useMutation({
+    mutationFn: async ({ id }: { id: number }) => {
+      try {
+        const res = await axios.patch(
+          `${api}/reports/${id}/reject/`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        return res.data;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    onSuccess: () => {
+      
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      queryClient.invalidateQueries({ queryKey: ["my-reports"] });
+    },
+  })
+
   return {
     // Query
     data: reportsQuery.data,
     isLoading: reportsQuery.isLoading,
+    isFetching: reportsQuery.isFetching,
     error: reportsQuery.error,
+    refetch: reportsQuery.refetch,
 
     // Mutation add report
     addReport: addReportMutation.mutate,
@@ -149,5 +175,10 @@ export default function useReports() {
     approuveReport: ApprouveMutation.mutate,
     isApprouving: ApprouveMutation.isPending,
     approuveError: ApprouveMutation.error,
+
+    //Mutation rejeter report
+    rejeteReport : RejeteMutation.mutate,
+    isRejeting: RejeteMutation.isPending,
+    rejeteError : RejeteMutation.error,
   };
 }

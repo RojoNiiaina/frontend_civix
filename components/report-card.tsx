@@ -22,6 +22,7 @@ import { ReportDetailDialog } from "./report-detail-dialog"
 import { title } from "process"
 import Link from "next/link"
 import useNotifications from "@/hooks/useNotifications"
+import { toast } from "sonner"
 
 export function ReportCard({
   id,
@@ -47,7 +48,7 @@ export function ReportCard({
 
 
 
-  const {approuveReport} = useReports()
+  const {approuveReport, rejeteReport} = useReports()
 
   const { user } = useAuth()
   const isAgent = user?.role === 'agent'
@@ -56,10 +57,10 @@ export function ReportCard({
   const Approuver = () => {
     approuveReport({id: Number(id)}, {
       onSuccess: () => {
-        alert('Report approuvé avec succès')
+        toast.success('Report approuvé avec succès')
       },
       onError: () => {
-        alert("Échec de l'approuvement du rapport. Veuillez réessayer.")
+        toast.error("Échec de l'approuvement du rapport. Veuillez réessayer.")
       }
     })
   }
@@ -70,10 +71,14 @@ export function ReportCard({
   }
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}?report=${id}`
-    navigator.clipboard.writeText(url)
-    console.log("[v0] Lien copié:", url)
-    // Vous pouvez ajouter un toast pour confirmer la copie
+    rejeteReport({id: Number(id)}, {
+      onSuccess: () => {
+        toast.success('Report rejeté avec succès')
+      },
+      onError: () => {
+        toast.error("Échec de l'approuvement du rapport. Veuillez réessayer.")
+      }
+    })
   }
 
 
@@ -187,11 +192,17 @@ export function ReportCard({
                       <span>Approuver la publication</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator /> 
-                    <DropdownMenuItem onClick={handleCopyLink} className="gap-2 hover:bg-muted hover:text-foreground">
-                      <Copy className="h-4 w-4" />
-                      <span>Rejeter la publication</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    {
+                      statut !== "rejete" && 
+                        <div>
+                          <DropdownMenuItem onClick={handleCopyLink} className="gap-2 hover:bg-muted hover:text-foreground">
+                            <Copy className="h-4 w-4" />
+                            <span>Rejeter la publication</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </div>
+                    }
+                    
                   </div>
                 }
                 {

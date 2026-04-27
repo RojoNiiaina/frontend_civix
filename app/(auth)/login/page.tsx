@@ -93,7 +93,7 @@ export default function LoginPage() {
                 />
               </div>
 
-              {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
+              {errorMessage === "Login failed" && <p className="text-red-500 text-sm">Rééssayer</p>}
 
               <Button className="w-full mt-2" size="lg" disabled={isLoggingIn}>
                 {isLoggingIn ? "Connexion..." : "Se connecter"}

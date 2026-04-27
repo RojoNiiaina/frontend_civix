@@ -33,6 +33,8 @@ import {
   MoreVertical,
   Wifi,
   WifiOff,
+  Video,
+  RefreshCw,
 } from "lucide-react"
 import useRecentReports from "@/hooks/useRecentReports"
 import { ReportCard } from "@/components/report-card"
@@ -40,10 +42,10 @@ import { AddAgentDialog } from "@/components/add-agent-dialog"
 import { useEffect, useState } from "react"
 
 export default function AgentDashboard() {
-  const { data: reports = [], isLoading, error } = useReports()
+  const { data: reports = [], isLoading, error, refetch, isFetching } = useReports()
   const { isConnected, unreadCount, lastMessage } = useReportWebSocket()
   const [showNotification, setShowNotification] = useState(false)
-  
+
   const stats = {
     newReports: reports.filter(report => report.statut === 'en_attente').length,
     approuve: reports.filter(report => report.statut === 'approuve').length,
@@ -67,7 +69,7 @@ export default function AgentDashboard() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <NavBar />
-      
+
 
       {/* Main Content */}
       <div className="container mx-auto px-6 py-8">
@@ -86,7 +88,7 @@ export default function AgentDashboard() {
               </div>
             )}
           </div> */}
-          
+
           {/* Notification Toast */}
           {showNotification && lastMessage?.type === 'new_report' && (
             <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in slide-in-from-top-2">
@@ -95,7 +97,7 @@ export default function AgentDashboard() {
                 <p className="font-medium">Nouveau signalement reçu!</p>
                 <p className="text-sm opacity-90">{lastMessage.report?.description?.substring(0, 50)}...</p>
               </div>
-              <button 
+              <button
                 onClick={() => setShowNotification(false)}
                 className="ml-4 text-blue-600 hover:text-blue-800"
               >
@@ -104,7 +106,7 @@ export default function AgentDashboard() {
             </div>
           )}
         </div>
-        
+
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -113,9 +115,13 @@ export default function AgentDashboard() {
               <p className="text-muted-foreground">Vue d'ensemble des activités et performances</p>
             </div>
             <div className="flex flex-wrap gap-3">
+              <Button onClick={() => refetch()} variant="outline" className="gap-2" disabled={isFetching}>
+                <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+                Actualiser
+              </Button>
               <Link href="/agent/live">
                 <Button variant="outline" className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors">
-                  <Users className="h-4 w-4" />
+                  <Video className="h-4 w-4" />
                   Live vidéo
                 </Button>
               </Link>
@@ -255,7 +261,7 @@ export default function AgentDashboard() {
                   </div>
                 </div>
               </CardHeader>
-              
+
               <div className="p-6">
                 <Tabs defaultValue="approuve">
                   <div className="sticky top-14 z-40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 mb-4">
@@ -333,7 +339,7 @@ export default function AgentDashboard() {
           {/* Right Column - Activity and Priorities */}
           <div className="xl:col-span-3 space-y-6">
             {/* <UrgentPrioritiesCard /> */}
-            
+
             <Card className="border shadow-sm">
               <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">

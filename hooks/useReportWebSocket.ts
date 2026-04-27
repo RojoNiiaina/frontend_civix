@@ -41,14 +41,14 @@ export const useReportWebSocket = () => {
     }
 
     const wsUrl = `ws://localhost:8000/ws/reports/?token=${token}`;
-    
+
     try {
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
         console.log('Report WebSocket connected');
         setIsConnected(true);
-        
+
         // Demander le nombre de reports non lus
         if (wsRef.current) {
           wsRef.current.send(JSON.stringify({
@@ -69,7 +69,7 @@ export const useReportWebSocket = () => {
               queryClient.invalidateQueries({ queryKey: ['reports'] });
               queryClient.invalidateQueries({ queryKey: ['recent-reports'] });
               queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
-              
+
               // Incrémenter le compteur non lu
               setUnreadCount(prev => prev + 1);
               break;
@@ -108,7 +108,7 @@ export const useReportWebSocket = () => {
       wsRef.current.onclose = (event) => {
         console.log('Report WebSocket disconnected:', event.code, event.reason);
         setIsConnected(false);
-        
+
         // Tentative de reconnexion après 5 secondes
         if (reconnectTimeoutRef.current) {
           clearTimeout(reconnectTimeoutRef.current);
@@ -148,7 +148,7 @@ export const useReportWebSocket = () => {
         type: 'mark_read',
         report_id: reportId
       }));
-      
+
       // Décrémenter le compteur localement
       setUnreadCount(prev => Math.max(0, prev - 1));
     }
